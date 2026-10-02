@@ -28,6 +28,7 @@ import AIAssistant from './pages/shared/AIAssistant';
 // Lazy placeholder pages
 import { Suspense, lazy } from 'react';
 const AdminDoctors = lazy(() => import('./pages/admin/AdminDoctors'));
+const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminPatients = lazy(() => import('./pages/admin/AdminPatients'));
 const AdminDepartments = lazy(() => import('./pages/admin/AdminDepartments'));
 const AdminBilling = lazy(() => import('./pages/admin/AdminBilling'));
@@ -125,6 +126,7 @@ const App = () => {
                 <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                   {/* Admin */}
                   <Route path="admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="admin/analytics" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
                   <Route path="admin/doctors" element={<ProtectedRoute roles={['admin']}><AdminDoctors /></ProtectedRoute>} />
                   <Route path="admin/patients" element={<ProtectedRoute roles={['admin']}><AdminPatients /></ProtectedRoute>} />
                   <Route path="admin/departments" element={<ProtectedRoute roles={['admin']}><AdminDepartments /></ProtectedRoute>} />

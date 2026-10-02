@@ -137,3 +137,13 @@ export const invoiceService = {
   downloadPDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
   exportCSV: (params) => api.get('/invoices/export.csv', { params, responseType: 'blob' }),
 };
+
+export const analyticsService = {
+  getOverview: (params) => api.get('/analytics/overview', { params }),
+  getAppointmentsTrend: (params) => api.get('/analytics/appointments-trend', { params }),
+  getRevenueTrend: (params) => api.get('/analytics/revenue-trend', { params }),
+  getPatientGrowth: (params) => api.get('/analytics/patient-growth', { params }),
+  getDepartmentsAnalytics: (params) => api.get('/analytics/departments', { params }),
+  getDoctorsAnalytics: (params) => api.get('/analytics/doctors', { params }),
+  exportCSV: (params) => api.get('/analytics/export.csv', { params, responseType: 'blob' }),
+};

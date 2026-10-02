@@ -25,6 +25,7 @@ import {
   UserRound,
   Sparkles,
   Clock,
+  BarChart3,
 } from "lucide-react";
 
 // ===============================
@@ -33,6 +34,7 @@ import {
 
 const ADMIN_NAV = [
   { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { path: "/admin/doctors", label: "Doctors", icon: Stethoscope },
   { path: "/admin/patients", label: "Patients", icon: Users },
   { path: "/admin/departments", label: "Departments", icon: Building2 },
