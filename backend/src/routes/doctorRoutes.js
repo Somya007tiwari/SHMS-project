@@ -1,20 +1,50 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const doctorController = require('../controllers/doctorController');
-const { authenticate } = require('../middleware/auth');
-const { authorize } = require('../middleware/rbac');
-const { upload, uploadToCloud } = require('../middleware/upload');
+const doctorController = require("../controllers/doctorController");
+const { authenticate } = require("../middleware/auth");
+const { authorize } = require("../middleware/rbac");
+const { imageUpload, uploadToCloud } = require("../middleware/upload");
 
-router.get('/', doctorController.getAll);
-router.get('/:id', doctorController.getById);
-router.get('/:id/schedule', doctorController.getSchedule);
+// Public route to list doctors
+router.get("/", doctorController.getAll);
 
-router.use(authenticate);
-router.get('/me/profile', authorize('doctor'), doctorController.getMyProfile);
-router.get('/me/dashboard', authorize('doctor'), doctorController.getDashboard);
-router.get('/me/patients', authorize('doctor'), doctorController.getPatients);
-router.put('/me/schedule', authorize('doctor'), doctorController.updateSchedule);
-router.put('/:id', authorize('admin', 'doctor'), upload.single('profileImage'), uploadToCloud('shms/profiles'), doctorController.update);
-router.post('/', authorize('admin'), doctorController.create);
+// Doctor specific /me routes (must come BEFORE /:id to prevent shadowing)
+router.get("/me/profile", authenticate, authorize("doctor"), doctorController.getMyProfile);
+router.get("/me/dashboard", authenticate, authorize("doctor"), doctorController.getDashboard);
+router.get("/me/patients", authenticate, authorize("doctor"), doctorController.getPatients);
+router.put("/me/schedule", authenticate, authorize("doctor"), doctorController.updateSchedule);
+router.post("/me/leaves", authenticate, authorize("doctor"), doctorController.createLeave);
+router.get("/me/leaves", authenticate, authorize("doctor"), doctorController.getMyLeaves);
+router.delete("/me/leaves/:id", authenticate, authorize("doctor"), doctorController.deleteLeave);
+
+// Doctor by ID routes
+router.get("/:id", doctorController.getById);
+router.get("/:id/schedule", doctorController.getSchedule);
+router.get("/:id/leaves", doctorController.getDoctorLeaves);
+
+// Public doctor review routes
+const reviewController = require("../controllers/reviewController");
+router.get("/:id/reviews", reviewController.getByDoctor);
+router.get("/:id/rating-summary", reviewController.getSummary);
+router.post("/:id/reviews", authenticate, authorize("patient"), reviewController.create);
+
+// Admin & Doctor write routes
+router.put(
+  "/:id",
+  authenticate,
+  authorize("admin", "doctor"),
+  imageUpload.single("profileImage"),
+  uploadToCloud("shms/profiles"),
+  doctorController.update
+);
+
+router.post(
+  "/",
+  authenticate,
+  authorize("admin"),
+  imageUpload.single("profileImage"),
+  uploadToCloud("shms/profiles"),
+  doctorController.create
+);
 
 module.exports = router;

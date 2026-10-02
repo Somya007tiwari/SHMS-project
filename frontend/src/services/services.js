@@ -10,6 +10,7 @@ export const appointmentService = {
   reject: (id, data) => api.patch(`/appointments/${id}/reject`, data),
   cancel: (id) => api.patch(`/appointments/${id}/cancel`),
   complete: (id, data) => api.patch(`/appointments/${id}/complete`, data),
+  reschedule: (id, data) => api.put(`/appointments/${id}/reschedule`, data),
 };
 
 export const doctorService = {
@@ -20,6 +21,10 @@ export const doctorService = {
   getMyPatients: (params) => api.get('/doctors/me/patients', { params }),
   getSchedule: (id) => api.get(`/doctors/${id}/schedule`),
   updateSchedule: (data) => api.put('/doctors/me/schedule', data),
+  createLeave: (data) => api.post('/doctors/me/leaves', data),
+  getMyLeaves: () => api.get('/doctors/me/leaves'),
+  deleteLeave: (id) => api.delete(`/doctors/me/leaves/${id}`),
+  getLeaves: (doctorId) => api.get(`/doctors/${doctorId}/leaves`),
   update: (id, data) => api.put(`/doctors/${id}`, data),
   create: (data) => api.post('/doctors', data),
 };
@@ -35,9 +40,13 @@ export const patientService = {
 
 export const prescriptionService = {
   create: (data) => api.post('/prescriptions', data),
+  update: (id, data) => api.put(`/prescriptions/${id}`, data),
   getMyPrescriptions: (params) => api.get('/prescriptions/my', { params }),
+  getDoctorPrescriptions: (params) => api.get('/prescriptions/doctor', { params }),
+  getAll: (params) => api.get('/prescriptions', { params }),
   getById: (id) => api.get(`/prescriptions/${id}`),
-  downloadPDF: (id) => api.get(`/prescriptions/${id}/download`, { responseType: 'blob' }),
+  getMedicineSuggestions: (q) => api.get('/prescriptions/medicine-suggestions', { params: { q } }),
+  downloadPDF: (id) => api.get(`/prescriptions/${id}/pdf`, { responseType: 'blob' }),
 };
 
 export const billingService = {
@@ -57,10 +66,32 @@ export const reportService = {
   delete: (id) => api.delete(`/reports/${id}`),
 };
 
+export const healthProfileService = {
+  getMine: () => api.get('/patients/me/health-profile'),
+  updateMine: (data) => api.put('/patients/me/health-profile', data),
+  getByPatient: (patientId) => api.get(`/patients/${patientId}/health-profile`),
+};
+
+export const medicalRecordService = {
+  getMyRecords: (params) => api.get('/medical-records/my', { params }),
+  getByPatient: (patientId, params) => api.get(`/medical-records/patient/${patientId}`, { params }),
+  getAll: (params) => api.get('/medical-records/all', { params }),
+  getById: (id) => api.get(`/medical-records/${id}`),
+  create: (data) => api.post('/medical-records', data),
+  update: (id, data) => api.put(`/medical-records/${id}`, data),
+  delete: (id) => api.delete(`/medical-records/${id}`),
+  uploadFiles: (id, formData) => api.post(`/medical-records/${id}/files`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  downloadFile: (fileId) => api.get(`/medical-records/files/${fileId}/download`, { responseType: 'blob' }),
+  deleteFile: (fileId) => api.delete(`/medical-records/files/${fileId}`),
+};
+
 export const notificationService = {
   getMyNotifications: (params) => api.get('/notifications', { params }),
-  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
-  markAllAsRead: () => api.patch('/notifications/read-all'),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAsUnread: (id) => api.put(`/notifications/${id}/unread`),
+  markAllAsRead: () => api.put('/notifications/read-all'),
+  deleteNotification: (id) => api.delete(`/notifications/${id}`),
 };
 
 export const adminService = {
@@ -78,6 +109,14 @@ export const departmentService = {
   create: (data) => api.post('/departments', data),
   update: (id, data) => api.put(`/departments/${id}`, data),
   delete: (id) => api.delete(`/departments/${id}`),
+};
+
+export const reviewService = {
+  create: (doctorId, data) => api.post(`/doctors/${doctorId}/reviews`, data),
+  update: (id, data) => api.put(`/reviews/${id}`, data),
+  delete: (id) => api.delete(`/reviews/${id}`),
+  getByDoctor: (doctorId, params) => api.get(`/doctors/${doctorId}/reviews`, { params }),
+  getSummary: (doctorId) => api.get(`/doctors/${doctorId}/rating-summary`),
 };
 
 export const aiService = {

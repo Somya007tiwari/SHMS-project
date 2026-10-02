@@ -34,6 +34,19 @@ const errorHandler = (err, req, res, next) => {
     }
   }
 
+  // Multer errors
+  const multer = require('multer');
+  if (err instanceof multer.MulterError) {
+    statusCode = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'Photo must be 2MB or smaller';
+    } else {
+      message = err.message;
+    }
+  } else if (err.message && (err.message.includes('images are allowed') || err.message.includes('not allowed'))) {
+    statusCode = 400;
+  }
+
   // JWT errors
   if (err.name === 'UnauthorizedError') {
     statusCode = 401;

@@ -42,8 +42,16 @@ const baseTemplate = (content) => `
 </html>
 `;
 
+const isPlaceholderEmail = !process.env.EMAIL_USER || process.env.EMAIL_USER.includes('your_email') || process.env.EMAIL_USER.includes('your-email') || process.env.EMAIL_USER === 'placeholder';
+
+const checkEmailConfig = () => {
+  if (isPlaceholderEmail) {
+    console.warn('⚠️ [Email Service Warning] EMAIL_USER is missing or placeholder in .env. Real email sending is skipped; in-app notifications will continue working.');
+  }
+};
+
 const sendEmail = async ({ to, subject, html }) => {
-  if (!process.env.EMAIL_USER) {
+  if (isPlaceholderEmail) {
     console.log(`[Email Mock] To: ${to} | Subject: ${subject}`);
     return { messageId: 'mock-' + Date.now() };
   }
@@ -132,7 +140,78 @@ const emailService = {
             ${isApproved ? '✅ Approved' : '❌ Rejected'}
           </span></p>
           ${rejectionReason ? `<div class="info-box"><strong>Reason:</strong> ${rejectionReason}</div>` : ''}
-          <a href="${process.env.FRONTEND_URL}/patient/appointments" class="btn">View Appointments</a>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/appointments" class="btn">View Appointments</a>
+        </div>
+      `)
+    });
+  },
+
+  async sendAppointmentCancelled({ email, name, otherPartyName, date, time, isDoctor }) {
+    return sendEmail({
+      to: email,
+      subject: '🚫 Appointment Cancelled',
+      html: baseTemplate(`
+        <div class="body">
+          <h2>Appointment Cancelled</h2>
+          <p>Hi ${name},</p>
+          <p>The appointment scheduled on <strong>${date} at ${time}</strong> with ${isDoctor ? 'Patient ' : 'Dr. '}${otherPartyName} has been cancelled.</p>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/${isDoctor ? 'doctor' : 'patient'}/appointments" class="btn">View Appointments</a>
+        </div>
+      `)
+    });
+  },
+
+  async sendAppointmentRescheduled({ email, name, doctorName, newDate, newTime }) {
+    return sendEmail({
+      to: email,
+      subject: '🔄 Appointment Rescheduled',
+      html: baseTemplate(`
+        <div class="body">
+          <h2>Appointment Rescheduled</h2>
+          <p>Hi ${name},</p>
+          <p>Your appointment with Dr. ${doctorName} has been rescheduled to:</p>
+          <div class="info-box">
+            <div class="info-row"><span class="info-label">New Date:</span><span class="info-value">${newDate}</span></div>
+            <div class="info-row"><span class="info-label">New Time:</span><span class="info-value">${newTime}</span></div>
+          </div>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/appointments" class="btn">View Appointment</a>
+        </div>
+      `)
+    });
+  },
+
+  async sendDoctorLeaveAffected({ email, patientName, doctorName, leaveStartDate, leaveEndDate, date, time }) {
+    return sendEmail({
+      to: email,
+      subject: '🗓️ Action Required: Doctor on Leave',
+      html: baseTemplate(`
+        <div class="body">
+          <h2>Doctor Leave Notification</h2>
+          <p>Hi ${patientName},</p>
+          <p>Dr. ${doctorName} will be on leave from <strong>${leaveStartDate} to ${leaveEndDate}</strong>.</p>
+          <p>Your appointment scheduled for <strong>${date} at ${time}</strong> needs to be rescheduled.</p>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/appointments" class="btn">Reschedule Appointment Now</a>
+        </div>
+      `)
+    });
+  },
+
+  async sendAppointmentReminder({ email, patientName, doctorName, date, time, hours, roomNumber }) {
+    return sendEmail({
+      to: email,
+      subject: `⏰ Reminder: Upcoming Appointment in ${hours === 1 ? '1 Hour' : '24 Hours'}`,
+      html: baseTemplate(`
+        <div class="body">
+          <h2>Upcoming Consultation Reminder</h2>
+          <p>Hi ${patientName},</p>
+          <p>This is a friendly reminder that you have an upcoming consultation in <strong>${hours === 1 ? '1 hour' : '24 hours'}</strong>.</p>
+          <div class="info-box">
+            <div class="info-row"><span class="info-label">Doctor:</span><span class="info-value">Dr. ${doctorName}</span></div>
+            <div class="info-row"><span class="info-label">Date:</span><span class="info-value">${date}</span></div>
+            <div class="info-row"><span class="info-label">Time:</span><span class="info-value">${time}</span></div>
+            ${roomNumber ? `<div class="info-row"><span class="info-label">Room:</span><span class="info-value">Room ${roomNumber}</span></div>` : ''}
+          </div>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/appointments" class="btn">View Appointment Details</a>
         </div>
       `)
     });
@@ -147,7 +226,7 @@ const emailService = {
           <h2>Your Prescription is Ready</h2>
           <p>Hi ${patientName},</p>
           <p>Dr. ${doctorName} has created a prescription for you. You can download it from your patient portal.</p>
-          <a href="${process.env.FRONTEND_URL}/patient/prescriptions/${prescriptionId}" class="btn">View Prescription</a>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/prescriptions/${prescriptionId}" class="btn">View Prescription</a>
           <div class="disclaimer">
             Always follow your doctor's instructions. Do not self-medicate.
           </div>
@@ -171,11 +250,12 @@ const emailService = {
             <div class="info-row"><span class="info-label">Payment Method:</span><span class="info-value">${paymentMethod}</span></div>
             <div class="info-row"><span class="info-label">Date:</span><span class="info-value">${new Date().toLocaleDateString('en-IN')}</span></div>
           </div>
-          <a href="${process.env.FRONTEND_URL}/patient/billing" class="btn">View Invoice</a>
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/patient/billing" class="btn">View Invoice</a>
         </div>
       `)
     });
-  }
+  },
+  checkEmailConfig
 };
 
 module.exports = emailService;

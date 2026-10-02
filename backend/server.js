@@ -8,6 +8,7 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 
+const path = require('path');
 const routes = require('./src/routes');
 const { errorHandler } = require('./src/middleware/errorHandler');
 const { generalLimiter } = require('./src/middleware/rateLimiter');
@@ -32,6 +33,7 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -72,6 +74,9 @@ app.use('*', (req, res) => {
 // ─── Global Error Handler ───────────────────────────────────────────────────
 app.use(errorHandler);
 
+const { startReminderCron } = require('./src/services/reminderCron');
+const emailService = require('./src/services/emailService');
+
 // ─── Start Server ───────────────────────────────────────────────────────────
 const server = app.listen(PORT, () => {
   console.log(`
@@ -81,6 +86,8 @@ const server = app.listen(PORT, () => {
   ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(12)}          ║
   ╚═══════════════════════════════════════════╝
   `);
+  emailService.checkEmailConfig();
+  startReminderCron();
 });
 
 // ─── Graceful Shutdown ──────────────────────────────────────────────────────

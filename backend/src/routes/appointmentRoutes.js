@@ -15,5 +15,6 @@ router.patch('/:id/approve', authorize('doctor', 'admin'), appointmentController
 router.patch('/:id/reject', authorize('doctor', 'admin'), appointmentController.reject);
 router.patch('/:id/cancel', appointmentController.cancel);
 router.patch('/:id/complete', authorize('doctor', 'admin'), appointmentController.complete);
+router.put('/:id/reschedule', authorize('patient', 'doctor', 'admin'), appointmentController.reschedule);
 
 module.exports = router;

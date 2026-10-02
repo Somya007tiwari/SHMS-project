@@ -27,7 +27,13 @@ const Login = () => {
       };
       navigate(redirectMap[user.role] || '/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed. Please try again.');
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else if (err.request || err.code === 'ERR_NETWORK' || !err.response) {
+        toast.error('Cannot reach the server. Please check your backend connection.');
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
