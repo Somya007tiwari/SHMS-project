@@ -35,6 +35,7 @@ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const DoctorSchedule = lazy(() => import('./pages/doctor/DoctorSchedule'));
 const DoctorLeaves = lazy(() => import('./pages/doctor/DoctorLeaves'));
+const DoctorBilling = lazy(() => import('./pages/doctor/DoctorBilling'));
 const DoctorPatients = lazy(() => import('./pages/doctor/DoctorPatients'));
 const DoctorPrescriptions = lazy(() => import('./pages/doctor/DoctorPrescriptions'));
 const PatientPrescriptions = lazy(() => import('./pages/patient/PatientPrescriptions'));
@@ -142,6 +143,7 @@ const App = () => {
                   <Route path="doctor/reports" element={<ProtectedRoute roles={['doctor']}><ComingSoon title="Medical Reports" /></ProtectedRoute>} />
                   <Route path="doctor/schedule" element={<ProtectedRoute roles={['doctor']}><DoctorSchedule /></ProtectedRoute>} />
                   <Route path="doctor/leaves" element={<ProtectedRoute roles={['doctor']}><DoctorLeaves /></ProtectedRoute>} />
+                  <Route path="doctor/billing" element={<ProtectedRoute roles={['doctor']}><DoctorBilling /></ProtectedRoute>} />
 
                   {/* Patient */}
                   <Route path="patient/dashboard" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />

@@ -123,3 +123,17 @@ export const aiService = {
   getWelcome: () => api.get('/ai/welcome'),
   chat: (message, history) => api.post('/ai/chat', { message, conversationHistory: history }),
 };
+
+export const invoiceService = {
+  create: (data) => api.post('/invoices', data),
+  getMyInvoices: (params) => api.get('/invoices/my', { params }),
+  getDoctorInvoices: (params) => api.get('/invoices/doctor', { params }),
+  getStats: () => api.get('/invoices/stats'),
+  getAll: (params) => api.get('/invoices', { params }),
+  getById: (id) => api.get(`/invoices/${id}`),
+  update: (id, data) => api.put(`/invoices/${id}`, data),
+  addPayment: (id, data) => api.post(`/invoices/${id}/payments`, data),
+  cancel: (id) => api.put(`/invoices/${id}/cancel`),
+  downloadPDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: 'blob' }),
+  exportCSV: (params) => api.get('/invoices/export.csv', { params, responseType: 'blob' }),
+};

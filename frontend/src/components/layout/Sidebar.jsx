@@ -56,6 +56,7 @@ const DOCTOR_NAV = [
   { path: "/doctor/reports", label: "Reports", icon: FileText },
   { path: "/doctor/schedule", label: "Schedule", icon: Activity },
   { path: "/doctor/leaves", label: "Leaves", icon: Clock },
+  { path: "/doctor/billing", label: "Invoices", icon: Receipt },
 ];
 
 const PATIENT_NAV = [

@@ -8,6 +8,7 @@ const { generateTimeSlots, getDayOfWeek } = require('../utils/helpers');
 const emailService = require('../services/emailService');
 const notificationService = require('../services/notificationService');
 const auditService = require('../services/auditService');
+const billingService = require('../services/billingService');
 
 const appointmentController = {
   async create(req, res) {
@@ -363,6 +364,15 @@ const appointmentController = {
     }
 
     const updated = await Appointment.updateStatus(appointment.id, 'completed', { notes });
+
+    // Auto-create consultation invoice (guarded, idempotent)
+    billingService.autoCreateConsultationInvoice({
+      appointmentId: appointment.id,
+      patientId: appointment.patient_id,
+      doctorId: appointment.doctor_id,
+      consultationFee: appointment.consultation_fee || 0,
+      createdBy: req.user ? req.user.userId : null
+    }).catch(console.error);
 
     notificationService.appointmentCompleted({
       patientUserId: appointment.patient_user_id,
