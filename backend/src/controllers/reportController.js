@@ -67,9 +67,25 @@ const reportController = {
   },
 
   async getById(req, res) {
-    const result = await query('SELECT * FROM reports WHERE id = $1', [req.params.id]);
-    if (!result.rows[0]) return sendError(res, 'Report not found', 404);
-    return sendSuccess(res, result.rows[0]);
+    const result = await query(
+      `SELECT r.*, p.user_id as patient_user_id, d.user_id as doctor_user_id 
+       FROM reports r
+       LEFT JOIN patients p ON r.patient_id = p.id
+       LEFT JOIN doctors d ON r.doctor_id = d.id
+       WHERE r.id = $1`,
+      [req.params.id]
+    );
+    const report = result.rows[0];
+    if (!report) return sendError(res, 'Report not found', 404);
+
+    if (req.user.role === 'patient' && report.patient_user_id !== req.user.userId) {
+      return sendError(res, 'Report not found', 404);
+    }
+    if (req.user.role === 'doctor' && report.doctor_user_id !== req.user.userId) {
+      return sendError(res, 'Report not found', 404);
+    }
+
+    return sendSuccess(res, report);
   },
 
   async delete(req, res) {

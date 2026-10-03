@@ -131,8 +131,10 @@ const deleteOldProfilePhoto = async (url, publicId) => {
     } else if (url && url.includes("/uploads/")) {
       const relativePath = url.split("/uploads/")[1];
       if (relativePath) {
-        const filePath = path.join(__dirname, "../../uploads", relativePath);
-        if (fs.existsSync(filePath)) {
+        const uploadsDir = path.resolve(__dirname, "../../uploads");
+        const safePath = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
+        const filePath = path.join(uploadsDir, safePath);
+        if (filePath.startsWith(uploadsDir) && fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       }
