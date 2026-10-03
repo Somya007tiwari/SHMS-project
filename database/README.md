@@ -51,6 +51,9 @@ The repository includes helper node scripts located in `backend/scripts/`:
    node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword123!"
    ```
 
+> [!CAUTION]
+> **PRODUCTION WARNING**: Do NOT run `database/seed.sql` on a public or production database as it creates a demo admin account with a known default password! For production deployments, use `node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword"` to bootstrap an administrator user safely.
+
 ---
 
 ## 🔍 Read-Only Schema Verification Checklist

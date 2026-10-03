@@ -41,6 +41,9 @@ This guide provides step-by-step instructions for deploying the Smart Hospital M
    node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword123!"
    ```
 
+> [!CAUTION]
+> **PRODUCTION WARNING**: Do NOT run `database/seed.sql` on a public or production database as it creates a demo admin account with a known default password! Always use `node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword"` to bootstrap an admin user safely.
+
 ---
 
 ## 2. Cryptographic Secrets Generation
@@ -93,7 +96,7 @@ Copy the generated keys into your environment variables for `JWT_ACCESS_SECRET` 
    - Set **Output Directory**: `dist`
 
 2. **Frontend Environment Variables**:
-   - `VITE_API_URL`: `https://your-backend-app.onrender.com/api/v1`
+   - `VITE_API_URL`: `https://your-backend-app.onrender.com/api/v1` (**Important**: `VITE_API_URL` MUST end with `/api/v1`)
    - `VITE_SHOW_DEMO`: `false`
 
 ---

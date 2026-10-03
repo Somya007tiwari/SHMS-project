@@ -53,7 +53,12 @@ app.use(compression());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(cookieParser());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve ONLY public profile photos statically; private medical records, lab reports, and signatures return 404
+app.use('/uploads/profiles', express.static(path.join(__dirname, 'uploads/profiles')));
+app.use('/uploads/avatars', express.static(path.join(__dirname, 'uploads/avatars')));
+app.use('/uploads', (req, res) => {
+  res.status(404).json({ success: false, message: 'File not found or access forbidden' });
+});
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
