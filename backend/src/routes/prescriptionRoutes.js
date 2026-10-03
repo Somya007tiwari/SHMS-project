@@ -23,11 +23,13 @@ router.post('/:id/share', authenticate, authorize('patient'), prescriptionContro
 router.get('/:id/shares', authenticate, authorize('patient'), prescriptionController.getShares);
 router.delete('/shares/:shareId', authenticate, authorize('patient'), prescriptionController.revokeShare);
 
-router.get('/:id/pdf', authenticate, prescriptionController.downloadPDF);
-router.get('/:id', authenticate, prescriptionController.getById);
-
+// Base collection routes
 router.get('/', authenticate, authorize('admin'), prescriptionController.getAllPrescriptions);
 router.post('/', authenticate, authorize('doctor'), validate(createPrescriptionSchema), prescriptionController.create);
+
+// Parameterized item routes
+router.get('/:id/pdf', authenticate, prescriptionController.downloadPDF);
+router.get('/:id', authenticate, prescriptionController.getById);
 router.put('/:id', authenticate, authorize('doctor'), prescriptionController.update);
 
 module.exports = router;

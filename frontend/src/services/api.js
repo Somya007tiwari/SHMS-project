@@ -13,6 +13,10 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const actingPatientId = sessionStorage.getItem('actingPatientId');
+  if (actingPatientId) {
+    config.headers['X-Acting-Patient-Id'] = actingPatientId;
+  }
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type'];
   }

@@ -58,6 +58,9 @@ const PublicVerifyPrescription = lazy(() => import('./pages/PublicVerifyPrescrip
 const PublicSharedPrescription = lazy(() => import('./pages/PublicSharedPrescription'));
 const PublicEmergencyCard = lazy(() => import('./pages/PublicEmergencyCard'));
 const PatientEmergencyCard = lazy(() => import('./pages/patient/PatientEmergencyCard'));
+const PatientFamily = lazy(() => import('./pages/patient/PatientFamily'));
+const DoctorTodayQueue = lazy(() => import('./pages/doctor/DoctorTodayQueue'));
+const AdminQueueBoard = lazy(() => import('./pages/admin/AdminQueueBoard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -154,9 +157,11 @@ const App = () => {
                   <Route path="admin/logs" element={<ProtectedRoute roles={['admin']}><AdminLogs /></ProtectedRoute>} />
                   <Route path="admin/security" element={<ProtectedRoute roles={['admin']}><AdminSecurity /></ProtectedRoute>} />
                   <Route path="admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
+                  <Route path="admin/queue-board" element={<ProtectedRoute roles={['admin']}><AdminQueueBoard /></ProtectedRoute>} />
 
                   {/* Doctor */}
                   <Route path="doctor/dashboard" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
+                  <Route path="doctor/queue" element={<ProtectedRoute roles={['doctor']}><DoctorTodayQueue /></ProtectedRoute>} />
                   <Route path="doctor/appointments" element={<ProtectedRoute roles={['doctor']}><AppointmentManagement /></ProtectedRoute>} />
                   <Route path="doctor/patients" element={<ProtectedRoute roles={['doctor']}><DoctorPatients /></ProtectedRoute>} />
                   <Route path="doctor/prescriptions" element={<ProtectedRoute roles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
@@ -168,6 +173,7 @@ const App = () => {
 
                   {/* Patient */}
                   <Route path="patient/dashboard" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />
+                  <Route path="patient/family" element={<ProtectedRoute roles={['patient']}><PatientFamily /></ProtectedRoute>} />
                   <Route path="patient/book-appointment" element={<ProtectedRoute roles={['patient']}><BookAppointment /></ProtectedRoute>} />
                   <Route path="patient/doctors/:id" element={<ProtectedRoute roles={['patient']}><DoctorProfile /></ProtectedRoute>} />
                   <Route path="patient/appointments" element={<ProtectedRoute roles={['patient']}><AppointmentManagement /></ProtectedRoute>} />

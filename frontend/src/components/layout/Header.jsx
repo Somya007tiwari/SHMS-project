@@ -11,11 +11,12 @@ import {
   LogOut,
   PhoneCall,
   X,
+  Users,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { notificationService } from "../../services/services";
+import { notificationService, familyService } from "../../services/services";
 import { Link, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -43,6 +44,32 @@ const Header = ({ onMenuToggle, title }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [familyOpen, setFamilyOpen] = useState(false);
+
+  const role = user?.role || "User";
+  const isPatient = role === "patient";
+
+  const { data: dependentsRes } = useQuery({
+    queryKey: ["family-dependents"],
+    queryFn: () => familyService.getDependents().then((r) => r.data),
+    enabled: isPatient,
+  });
+  const dependents = (dependentsRes?.data || []).filter((d) => d.is_active);
+  const actingId = sessionStorage.getItem("actingPatientId");
+  const actingName = sessionStorage.getItem("actingPatientName");
+
+  const handleSelectProfile = (dep) => {
+    if (!dep) {
+      sessionStorage.removeItem("actingPatientId");
+      sessionStorage.removeItem("actingPatientName");
+    } else {
+      sessionStorage.setItem("actingPatientId", dep.dependent_patient_id);
+      sessionStorage.setItem("actingPatientName", `${dep.first_name} ${dep.last_name}`);
+    }
+    qc.clear();
+    setFamilyOpen(false);
+    window.location.reload();
+  };
 
   const { data: unreadRes } = useQuery({
     queryKey: ["notifications-unread-count"],
@@ -90,8 +117,6 @@ const Header = ({ onMenuToggle, title }) => {
 
   const firstName = user?.firstName || "User";
   const lastName = user?.lastName || "";
-  const role = user?.role || "User";
-  const isPatient = role === "patient";
 
   const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
 
@@ -184,6 +209,86 @@ const Header = ({ onMenuToggle, title }) => {
           Ctrl K
         </span>
       </button>
+
+      {/* Family / Acting Profile Switcher */}
+      {isPatient && dependents.length > 0 && (
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setFamilyOpen(!familyOpen)}
+            className={
+              "flex items-center gap-2 h-10 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all border " +
+              (actingId
+                ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+                : isDark
+                ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
+                : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200")
+            }
+            title="Switch family member profile"
+          >
+            <Users size={16} />
+            <span className="hidden sm:inline-block max-w-[120px] truncate">
+              {actingId ? actingName : "Self (Me)"}
+            </span>
+            <ChevronDown size={14} />
+          </button>
+
+          {familyOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setFamilyOpen(false)} />
+              <div
+                className={
+                  "absolute right-0 top-full mt-2 w-56 rounded-2xl border shadow-2xl z-50 overflow-hidden p-2 space-y-1 " +
+                  (isDark ? "bg-[#111827] border-slate-700" : "bg-white border-slate-200")
+                }
+              >
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Acting Profile Context
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSelectProfile(null)}
+                  className={
+                    "flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-semibold transition-colors " +
+                    (!actingId
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                      : isDark
+                      ? "text-slate-300 hover:bg-slate-800"
+                      : "text-slate-700 hover:bg-slate-50")
+                  }
+                >
+                  <span>Self ({firstName})</span>
+                  {!actingId && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                </button>
+
+                {dependents.map((dep) => {
+                  const isSelected = actingId === String(dep.dependent_patient_id);
+                  return (
+                    <button
+                      key={dep.id}
+                      type="button"
+                      onClick={() => handleSelectProfile(dep)}
+                      className={
+                        "flex items-center justify-between w-full px-3 py-2 rounded-xl text-xs font-semibold transition-colors " +
+                        (isSelected
+                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                          : isDark
+                          ? "text-slate-300 hover:bg-slate-800"
+                          : "text-slate-700 hover:bg-slate-50")
+                      }
+                    >
+                      <span className="truncate">
+                        {dep.first_name} {dep.last_name} ({dep.relation})
+                      </span>
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Emergency (patients only) */}
       {isPatient && (

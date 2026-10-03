@@ -190,3 +190,19 @@ export const emergencyCardService = {
   regenerateToken: () => api.post('/emergency-card/me/regenerate'),
   getPublicCard: (token) => api.get(`/emergency-card/public/${token}`),
 };
+
+export const queueService = {
+  checkIn: (data) => api.post('/queue/check-in', data),
+  getMyToken: (appointmentId) => api.get('/queue/my-token', { params: { appointmentId } }),
+  getDoctorTodayQueue: (params) => api.get('/queue/doctor/today', { params }),
+  callNext: () => api.post('/queue/call-next'),
+  updateTokenStatus: (tokenId, data) => api.post(`/queue/token/${tokenId}/status`, data),
+  getBoard: () => api.get('/queue/board'),
+};
+
+export const familyService = {
+  getMyDependents: () => api.get('/family'),
+  createDependent: (data) => api.post('/family', data),
+  updateDependent: (id, data) => api.put(`/family/${id}`, data),
+  deactivateDependent: (id) => api.delete(`/family/${id}`),
+};

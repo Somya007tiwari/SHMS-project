@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { appointmentService, reviewService } from '../../services/services';
+import { appointmentService, reviewService, queueService } from '../../services/services';
 import DataTable from '../../components/ui/DataTable';
-import { Check, X, Eye, CheckCircle, Calendar, Star, Trash2, RefreshCw, Clock, FileText } from 'lucide-react';
+import { Check, X, Eye, CheckCircle, Calendar, Star, Trash2, RefreshCw, Clock, FileText, Ticket } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import Modal from '../../components/ui/Modal';
 import PatientRecordsModal from '../doctor/PatientRecordsModal';
+import PatientTokenModal from '../../components/queue/PatientTokenModal';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 
@@ -54,6 +55,19 @@ const AppointmentManagement = () => {
   const [rescheduleDate, setRescheduleDate] = useState('');
   const [rescheduleSlot, setRescheduleSlot] = useState('');
   const [submittingReschedule, setSubmittingReschedule] = useState(false);
+
+  // Queue Token Modal state
+  const [tokenModalApptId, setTokenModalApptId] = useState(null);
+
+  const handleCheckIn = async (row) => {
+    try {
+      const res = await queueService.checkIn({ appointmentId: row.id });
+      toast.success(res.data?.message || 'Checked in successfully!');
+      setTokenModalApptId(row.id);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Check-in failed');
+    }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['appointments', page, statusFilter, user?.role],
@@ -283,6 +297,18 @@ const AppointmentManagement = () => {
               Records
             </button>
           )}
+          {/* Check-in / Token Button for Patients */}
+          {user?.role === 'patient' && row.status === 'approved' && (
+            <button
+              onClick={() => handleCheckIn(row)}
+              className="px-2.5 py-1 text-xs font-bold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all flex items-center gap-1 shadow-sm"
+              title="Check in to OPD queue"
+            >
+              <Ticket size={13} />
+              Check in / Token
+            </button>
+          )}
+
           {['pending', 'approved', 'needs_reschedule'].includes(row.status) && (
             <button onClick={() => handleAction(row, 'cancel')}
               className="p-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-gray-700 dark:text-gray-400 transition-all" title="Cancel">
@@ -589,6 +615,14 @@ const AppointmentManagement = () => {
             setShowRecordsModal(false);
             setRecordsPatient(null);
           }}
+        />
+      )}
+
+      {/* Patient Live Queue Token Modal */}
+      {tokenModalApptId && (
+        <PatientTokenModal
+          appointmentId={tokenModalApptId}
+          onClose={() => setTokenModalApptId(null)}
         />
       )}
     </div>

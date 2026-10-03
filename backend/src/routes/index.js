@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
+const resolveActingPatient = require('../middleware/actingAs');
+
 router.use('/auth', require('./authRoutes'));
+
+// Apply resolveActingPatient middleware to resolve dependent context when X-Acting-Patient-Id header is sent
+router.use(resolveActingPatient);
+
 router.use('/patients', require('./patientRoutes'));
 router.use('/doctors', require('./doctorRoutes'));
 router.use('/departments', require('./departmentRoutes'));
@@ -19,5 +25,7 @@ router.use('/invoices', require('./invoiceRoutes'));
 router.use('/analytics', require('./analyticsRoutes'));
 router.use('/lab', require('./labRoutes'));
 router.use('/emergency-card', require('./emergencyCardRoutes'));
+router.use('/queue', require('./queueRoutes'));
+router.use('/family', require('./familyRoutes'));
 
 module.exports = router;

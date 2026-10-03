@@ -48,12 +48,14 @@ const ADMIN_NAV = [
   { path: "/admin/lab-orders", label: "Lab Orders", icon: FlaskConical },
   { path: "/admin/billing", label: "Billing", icon: Receipt },
   { path: "/admin/security", label: "Security", icon: ShieldCheck },
+  { path: "/admin/queue-board", label: "Queue Board 📺", icon: Activity },
   { path: "/admin/logs", label: "Activity Logs", icon: Activity },
   { path: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 const DOCTOR_NAV = [
   { path: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/doctor/queue", label: "Today's Queue 🚨", icon: Users },
   { path: "/doctor/appointments", label: "Appointments", icon: Calendar },
   { path: "/doctor/patients", label: "My Patients", icon: Users },
   {
@@ -70,6 +72,7 @@ const DOCTOR_NAV = [
 
 const PATIENT_NAV = [
   { path: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/patient/family", label: "My Family 👨‍👩‍👧", icon: Users },
   { path: "/patient/emergency-card", label: "Emergency Card 🚨", icon: ShieldAlert },
   { path: "/patient/ai-assistant", label: "AI Health Assistant", icon: Sparkles },
   {
