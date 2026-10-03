@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
+import BottomNav from "../components/layout/BottomNav";
+import SkipLink from "../components/ui/SkipLink";
 import { useTheme } from "../context/ThemeContext";
 
 const PAGE_TITLES = {
   "/admin/dashboard": "Admin Dashboard",
+  "/admin/analytics": "Advanced Hospital Analytics",
   "/admin/doctors": "Manage Doctors",
   "/admin/patients": "Manage Patients",
   "/admin/departments": "Departments",
@@ -20,6 +23,7 @@ const PAGE_TITLES = {
   "/doctor/reports": "Medical Reports",
   "/doctor/schedule": "My Schedule",
   "/doctor/leaves": "Unavailability & Leaves",
+  "/doctor/billing": "Appointment Invoices",
   "/patient/dashboard": "Patient Dashboard",
   "/patient/book-appointment": "Book Appointment",
   "/patient/appointments": "My Appointments",
@@ -39,10 +43,11 @@ const DashboardLayout = () => {
 
   return (
     <div
-      className={`flex h-screen overflow-hidden ${isDark ? "bg-gray-950" : "bg-slate-50"}`}
+      className={`flex h-screen overflow-hidden ${isDark ? "bg-gray-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}
     >
-      {/* Desktop sidebar: no fixed width here, the sidebar sets its own width
-          (270px open / 82px collapsed) and this wrapper follows it */}
+      <SkipLink targetId="main-content" />
+
+      {/* Desktop sidebar */}
       <div className="hidden lg:block flex-shrink-0">
         <Sidebar isOpen={true} />
       </div>
@@ -55,14 +60,14 @@ const DashboardLayout = () => {
       />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Header onMenuToggle={() => setSidebarOpen(true)} title={pageTitle} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {/* key re-runs the fade on every page change */}
+        <main id="main-content" tabIndex="-1" className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6 focus:outline-none">
           <div key={location.pathname} className="animate-fade-in">
             <Outlet />
           </div>
         </main>
+        <BottomNav onOpenMore={() => setSidebarOpen(true)} />
       </div>
     </div>
   );

@@ -205,9 +205,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="bg-red-500 text-white p-5 text-2xl font-bold">
-        NEW DASHBOARD TEST
-      </div>
 
       {/* =========================================================
 WELCOME SECTION

@@ -95,17 +95,20 @@ const { startReminderCron } = require('./src/services/reminderCron');
 const emailService = require('./src/services/emailService');
 
 // ─── Start Server ───────────────────────────────────────────────────────────
-const server = app.listen(PORT, () => {
-  console.log(`
-  ╔═══════════════════════════════════════════╗
-  ║   Smart Hospital Management System API    ║
-  ║   Server running on port ${PORT}             ║
-  ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(12)}          ║
-  ╚═══════════════════════════════════════════╝
-  `);
-  emailService.checkEmailConfig();
-  startReminderCron();
-});
+let server;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`
+    ╔═══════════════════════════════════════════╗
+    ║   Smart Hospital Management System API    ║
+    ║   Server running on port ${PORT}             ║
+    ║   Environment: ${(process.env.NODE_ENV || 'development').padEnd(12)}          ║
+    ╚═══════════════════════════════════════════╝
+    `);
+    emailService.checkEmailConfig();
+    startReminderCron();
+  });
+}
 
 // ─── Graceful Shutdown ──────────────────────────────────────────────────────
 process.on('SIGTERM', () => {

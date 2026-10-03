@@ -391,9 +391,7 @@ const AdminDoctors = () => {
                   JPG, PNG or WebP, up to 2MB
                 </p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            </div>            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {field("firstName", "First Name", {
                 placeholder: "First name",
                 required: true,
@@ -418,7 +416,7 @@ const AdminDoctors = () => {
           {/* Professional */}
           <section>
             <h3 className={sectionCls}>Professional details</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Department</label>
                 <select
@@ -458,14 +456,14 @@ const AdminDoctors = () => {
           {/* Hospital */}
           <section>
             <h3 className={sectionCls}>Hospital details</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {field("consultationFee", "Consultation Fee (₹)", {
                 type: "number",
                 placeholder: "500",
                 rules: { min: { value: 0, message: "Cannot be negative" } },
               })}
               {field("roomNumber", "Room Number", { placeholder: "e.g., 204" })}
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <label className={labelCls}>About</label>
                 <textarea
                   rows={3}
