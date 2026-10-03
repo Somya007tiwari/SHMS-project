@@ -171,14 +171,16 @@ const Login = () => {
             </p>
 
             {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2">Demo Credentials:</p>
-              <div className="space-y-1 text-xs text-blue-600 dark:text-blue-300">
-                <p>🔑 Admin: <span className="font-mono">admin@shms.com</span> / <span className="font-mono">Admin@123456</span></p>
-                <p>🩺 Doctor: <span className="font-mono">dr.sharma@shms.com</span> / <span className="font-mono">Doctor@123456</span></p>
-                <p>👤 Patient: <span className="font-mono">john.doe@example.com</span> / <span className="font-mono">Patient@123456</span></p>
+            {(import.meta.env.DEV || import.meta.env.VITE_SHOW_DEMO === 'true') && (
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2">Demo Credentials:</p>
+                <div className="space-y-1 text-xs text-blue-600 dark:text-blue-300">
+                  <p>🔑 Admin: <span className="font-mono">admin@shms.com</span> / <span className="font-mono">Admin@123456</span></p>
+                  <p>🩺 Doctor: <span className="font-mono">doctor.smith@example.com</span> / <span className="font-mono">Doctor@123456</span></p>
+                  <p>👤 Patient: <span className="font-mono">john.doe@example.com</span> / <span className="font-mono">Patient@123456</span></p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -56,18 +56,33 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
-// ─── Rate Limiting ──────────────────────────────────────────────────────────
-app.use('/api/', generalLimiter);
+const { query } = require('./src/config/database');
 
-// ─── Health Check ───────────────────────────────────────────────────────────
-app.get('/health', (req, res) => {
+// ─── Health Check (Excluded from Rate Limiting) ─────────────────────────────
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'down';
+  try {
+    await query('SELECT 1');
+    dbStatus = 'up';
+  } catch (e) {
+    dbStatus = 'down';
+  }
   res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV
+    status: 'ok',
+    time: new Date().toISOString(),
+    db: dbStatus
   });
 });
+
+app.get('/health', async (req, res) => {
+  res.json({
+    status: 'ok',
+    time: new Date().toISOString()
+  });
+});
+
+// ─── Rate Limiting ──────────────────────────────────────────────────────────
+app.use('/api/', generalLimiter);
 
 // ─── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/v1', routes);
