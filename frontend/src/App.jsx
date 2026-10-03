@@ -34,6 +34,7 @@ const AdminDepartments = lazy(() => import('./pages/admin/AdminDepartments'));
 const AdminBilling = lazy(() => import('./pages/admin/AdminBilling'));
 const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminSecurity = lazy(() => import('./pages/admin/AdminSecurity'));
 const DoctorSchedule = lazy(() => import('./pages/doctor/DoctorSchedule'));
 const DoctorLeaves = lazy(() => import('./pages/doctor/DoctorLeaves'));
 const DoctorBilling = lazy(() => import('./pages/doctor/DoctorBilling'));
@@ -48,6 +49,10 @@ const AdminPrescriptions = lazy(() => import('./pages/admin/AdminPrescriptions')
 const Profile = lazy(() => import('./pages/shared/Profile'));
 const Notifications = lazy(() => import('./pages/shared/Notifications'));
 const DoctorProfile = lazy(() => import('./pages/shared/DoctorProfile'));
+const AdminLabTests = lazy(() => import('./pages/admin/AdminLabTests'));
+const AdminLabOrders = lazy(() => import('./pages/admin/AdminLabOrders'));
+const DoctorLabOrders = lazy(() => import('./pages/doctor/DoctorLabOrders'));
+const PatientLabTests = lazy(() => import('./pages/patient/PatientLabTests'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -134,7 +139,10 @@ const App = () => {
                   <Route path="admin/medical-records" element={<ProtectedRoute roles={['admin']}><AdminMedicalRecords /></ProtectedRoute>} />
                   <Route path="admin/prescriptions" element={<ProtectedRoute roles={['admin']}><AdminPrescriptions /></ProtectedRoute>} />
                   <Route path="admin/billing" element={<ProtectedRoute roles={['admin']}><AdminBilling /></ProtectedRoute>} />
+                  <Route path="admin/lab-tests" element={<ProtectedRoute roles={['admin']}><AdminLabTests /></ProtectedRoute>} />
+                  <Route path="admin/lab-orders" element={<ProtectedRoute roles={['admin']}><AdminLabOrders /></ProtectedRoute>} />
                   <Route path="admin/logs" element={<ProtectedRoute roles={['admin']}><AdminLogs /></ProtectedRoute>} />
+                  <Route path="admin/security" element={<ProtectedRoute roles={['admin']}><AdminSecurity /></ProtectedRoute>} />
                   <Route path="admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
 
                   {/* Doctor */}
@@ -142,6 +150,7 @@ const App = () => {
                   <Route path="doctor/appointments" element={<ProtectedRoute roles={['doctor']}><AppointmentManagement /></ProtectedRoute>} />
                   <Route path="doctor/patients" element={<ProtectedRoute roles={['doctor']}><DoctorPatients /></ProtectedRoute>} />
                   <Route path="doctor/prescriptions" element={<ProtectedRoute roles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
+                  <Route path="doctor/lab-orders" element={<ProtectedRoute roles={['doctor']}><DoctorLabOrders /></ProtectedRoute>} />
                   <Route path="doctor/reports" element={<ProtectedRoute roles={['doctor']}><ComingSoon title="Medical Reports" /></ProtectedRoute>} />
                   <Route path="doctor/schedule" element={<ProtectedRoute roles={['doctor']}><DoctorSchedule /></ProtectedRoute>} />
                   <Route path="doctor/leaves" element={<ProtectedRoute roles={['doctor']}><DoctorLeaves /></ProtectedRoute>} />
@@ -154,6 +163,7 @@ const App = () => {
                   <Route path="patient/appointments" element={<ProtectedRoute roles={['patient']}><AppointmentManagement /></ProtectedRoute>} />
                   <Route path="patient/medical-records" element={<ProtectedRoute roles={['patient']}><PatientMedicalRecords /></ProtectedRoute>} />
                   <Route path="patient/prescriptions" element={<ProtectedRoute roles={['patient']}><PatientPrescriptions /></ProtectedRoute>} />
+                  <Route path="patient/lab-tests" element={<ProtectedRoute roles={['patient']}><PatientLabTests /></ProtectedRoute>} />
                   <Route path="patient/reports" element={<ProtectedRoute roles={['patient']}><PatientReports /></ProtectedRoute>} />
                   <Route path="patient/billing" element={<ProtectedRoute roles={['patient']}><PatientBilling /></ProtectedRoute>} />
 

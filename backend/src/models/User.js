@@ -167,6 +167,66 @@ class User {
 
     return { users: result.rows, total: parseInt(countResult.rows[0].count) };
   }
+
+  static async recordLoginAttempt(userId, email, ip, userAgent, success, reason = null) {
+    try {
+      await query(
+        `INSERT INTO login_history (user_id, email, ip_address, user_agent, success, reason)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, email, ip, userAgent, success, reason]
+      );
+    } catch (err) {
+      // Graceful degradation if migration table does not exist yet
+    }
+  }
+
+  static async handleFailedLogin(user, email, ip, userAgent) {
+    try {
+      const maxAttempts = parseInt(process.env.LOGIN_MAX_ATTEMPTS) || 5;
+      const lockMinutes = parseInt(process.env.LOGIN_LOCK_MINUTES) || 15;
+      const newAttempts = (user.failed_login_attempts || 0) + 1;
+
+      if (newAttempts >= maxAttempts) {
+        const lockUntil = new Date(Date.now() + lockMinutes * 60 * 1000);
+        await query(
+          'UPDATE users SET failed_login_attempts = $1, locked_until = $2 WHERE id = $3',
+          [newAttempts, lockUntil, user.id]
+        );
+      } else {
+        await query(
+          'UPDATE users SET failed_login_attempts = $1 WHERE id = $2',
+          [newAttempts, user.id]
+        );
+      }
+    } catch (err) {
+      // Graceful degradation
+    }
+    await this.recordLoginAttempt(user ? user.id : null, email, ip, userAgent, false, 'Invalid credentials');
+  }
+
+  static async handleSuccessfulLogin(userId, email, ip, userAgent) {
+    try {
+      await query(
+        'UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login = NOW() WHERE id = $1',
+        [userId]
+      );
+    } catch (err) {
+      // Graceful degradation
+    }
+    await this.recordLoginAttempt(userId, email, ip, userAgent, true, null);
+  }
+
+  static async unlockUser(userId) {
+    try {
+      await query(
+        'UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1',
+        [userId]
+      );
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
 }
 
 module.exports = User;

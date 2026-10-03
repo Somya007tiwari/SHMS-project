@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -11,6 +11,7 @@ import {
   Receipt,
   FileText,
   FlaskConical,
+  TestTube,
   Bell,
   Settings,
   ChevronLeft,
@@ -26,6 +27,7 @@ import {
   Sparkles,
   Clock,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 
 // ===============================
@@ -41,7 +43,10 @@ const ADMIN_NAV = [
   { path: "/admin/appointments", label: "Appointments", icon: Calendar },
   { path: "/admin/medical-records", label: "Medical Records", icon: FileText },
   { path: "/admin/prescriptions", label: "Prescriptions", icon: ClipboardList },
+  { path: "/admin/lab-tests", label: "Lab Catalog", icon: TestTube },
+  { path: "/admin/lab-orders", label: "Lab Orders", icon: FlaskConical },
   { path: "/admin/billing", label: "Billing", icon: Receipt },
+  { path: "/admin/security", label: "Security", icon: ShieldCheck },
   { path: "/admin/logs", label: "Activity Logs", icon: Activity },
   { path: "/admin/settings", label: "Settings", icon: Settings },
 ];
@@ -55,6 +60,7 @@ const DOCTOR_NAV = [
     label: "Prescriptions",
     icon: ClipboardList,
   },
+  { path: "/doctor/lab-orders", label: "Lab Orders", icon: FlaskConical },
   { path: "/doctor/reports", label: "Reports", icon: FileText },
   { path: "/doctor/schedule", label: "Schedule", icon: Activity },
   { path: "/doctor/leaves", label: "Leaves", icon: Clock },
@@ -75,7 +81,8 @@ const PATIENT_NAV = [
   },
   { path: "/patient/medical-records", label: "Medical Records", icon: FileText },
   { path: "/patient/prescriptions", label: "Prescriptions", icon: FileText },
-  { path: "/patient/reports", label: "Medical Reports", icon: FlaskConical },
+  { path: "/patient/lab-tests", label: "Lab Tests & Reports", icon: FlaskConical },
+  { path: "/patient/reports", label: "Medical Reports", icon: FileText },
   { path: "/patient/billing", label: "Billing", icon: Receipt },
 ];
 
@@ -185,6 +192,20 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
         ? "Doctor"
         : "Patient";
 
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') onClose && onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isMobile, isOpen, onClose]);
+
   const onNavigate = isMobile ? onClose : undefined;
   const ringColor = isDark ? "border-[#0F172A]" : "border-white";
   const sectionLabel = `text-[10px] font-bold uppercase tracking-widest ${
@@ -203,6 +224,7 @@ const Sidebar = ({ isOpen, onClose, isMobile }) => {
       )}
 
       <aside
+        aria-label="Main Navigation"
         className={`${
           isMobile
             ? `fixed top-0 left-0 w-[270px] ${isOpen ? "translate-x-0" : "-translate-x-full"}`

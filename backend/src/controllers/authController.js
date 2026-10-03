@@ -55,18 +55,43 @@ const authController = {
 
   async login(req, res) {
     const { email, password } = req.body;
+    const ip = req.ip || req.connection?.remoteAddress || '127.0.0.1';
+    const userAgent = req.headers['user-agent'] || 'Unknown';
 
     const user = await User.findByEmail(email);
-    if (!user) return sendError(res, 'Invalid email or password', 401);
-    if (!user.is_active) return sendError(res, 'Account has been deactivated. Please contact support.', 401);
+    if (!user) {
+      await User.recordLoginAttempt(null, email, ip, userAgent, false, 'Invalid credentials');
+      return sendError(res, 'Invalid email or password', 401);
+    }
+
+    if (!user.is_active) {
+      await User.recordLoginAttempt(user.id, email, ip, userAgent, false, 'Account deactivated');
+      return sendError(res, 'Account has been deactivated. Please contact support.', 401);
+    }
+
+    // Account Lockout check
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      const lockMinutes = process.env.LOGIN_LOCK_MINUTES || 15;
+      await User.recordLoginAttempt(user.id, email, ip, userAgent, false, 'Account locked');
+      return sendError(
+        res,
+        `Account is temporarily locked due to consecutive failed login attempts. Please try again after ${lockMinutes} minutes.`,
+        401
+      );
+    }
 
     const isValidPassword = await User.verifyPassword(password, user.password_hash);
-    if (!isValidPassword) return sendError(res, 'Invalid email or password', 401);
+    if (!isValidPassword) {
+      await User.handleFailedLogin(user, email, ip, userAgent);
+      return sendError(res, 'Invalid email or password', 401);
+    }
+
+    // Success login
+    await User.handleSuccessfulLogin(user.id, email, ip, userAgent);
 
     const accessToken = User.generateAccessToken(user);
     const refreshToken = User.generateRefreshToken(user.id);
     await User.saveRefreshToken(user.id, refreshToken);
-    await User.updateLastLogin(user.id);
 
     res.cookie('refreshToken', refreshToken, jwtConfig.cookieOptions);
 

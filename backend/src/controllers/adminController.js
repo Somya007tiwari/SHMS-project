@@ -115,10 +115,201 @@ const adminController = {
     return sendSuccess(res, null, 'User deactivated successfully');
   },
 
-  async activateUser(req, res) {
-    const { id } = req.params;
     await query('UPDATE users SET is_active = true WHERE id = $1', [id]);
     return sendSuccess(res, null, 'User activated successfully');
+  },
+
+  async unlockUser(req, res) {
+    const { id } = req.params;
+    const User = require('../models/User');
+    const success = await User.unlockUser(id);
+    if (success) {
+      return sendSuccess(res, null, 'User account unlocked successfully');
+    }
+    return sendError(res, 'Failed to unlock user or user not found', 400);
+  },
+
+  async getAuditLogs(req, res) {
+    const { page, limit } = getPagination(req.query);
+    const { search, action, entityType, export: exportCSV } = req.query;
+
+    try {
+      let whereClause = 'WHERE 1=1';
+      const params = [];
+      let paramCount = 1;
+
+      if (action) {
+        whereClause += ` AND a.action = $${paramCount++}`;
+        params.push(action);
+      }
+
+      if (entityType) {
+        whereClause += ` AND a.entity_type = $${paramCount++}`;
+        params.push(entityType);
+      }
+
+      if (search) {
+        whereClause += ` AND (a.description ILIKE $${paramCount} OR u.email ILIKE $${paramCount})`;
+        params.push(`%${search}%`);
+        paramCount++;
+      }
+
+      // If export CSV requested
+      if (exportCSV === 'true' || exportCSV === 'csv') {
+        const result = await query(
+          `SELECT a.id, a.user_id, u.email as user_email, a.action, a.entity_type, a.entity_id, 
+                  a.description, a.ip_address, a.created_at
+           FROM audit_logs a
+           LEFT JOIN users u ON a.user_id = u.id
+           ${whereClause}
+           ORDER BY a.created_at DESC
+           LIMIT 500`,
+          params
+        );
+
+        const sanitize = (v) => {
+          if (v == null) return '""';
+          let str = String(v).replace(/"/g, '""');
+          if (/^[=+@\-\t\r]/.test(str)) str = `'${str}`;
+          return `"${str}"`;
+        };
+
+        const headers = ['ID', 'User Email', 'Action', 'Entity Type', 'Entity ID', 'Description', 'IP Address', 'Created At'];
+        const rows = result.rows.map(r => [
+          sanitize(r.id),
+          sanitize(r.user_email || 'N/A'),
+          sanitize(r.action),
+          sanitize(r.entity_type),
+          sanitize(r.entity_id),
+          sanitize(r.description),
+          sanitize(r.ip_address),
+          sanitize(r.created_at)
+        ]);
+
+        const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="audit_logs.csv"');
+        return res.status(200).send(csvContent);
+      }
+
+      const offset = (page - 1) * limit;
+      const countResult = await query(
+        `SELECT COUNT(*) FROM audit_logs a LEFT JOIN users u ON a.user_id = u.id ${whereClause}`,
+        params
+      );
+
+      params.push(limit, offset);
+      const result = await query(
+        `SELECT a.id, a.user_id, u.email as user_email, u.role as user_role, a.action, 
+                a.entity_type, a.entity_id, a.description, a.ip_address, a.created_at
+         FROM audit_logs a
+         LEFT JOIN users u ON a.user_id = u.id
+         ${whereClause}
+         ORDER BY a.created_at DESC
+         LIMIT $${paramCount} OFFSET $${paramCount + 1}`,
+        params
+      );
+
+      return sendSuccess(res, {
+        logs: result.rows,
+        pagination: buildPaginationMeta(parseInt(countResult.rows[0].count), page, limit),
+        tableMissing: false
+      });
+    } catch (err) {
+      console.warn('Audit logs query degraded (table missing or error):', err.message);
+      return sendSuccess(res, {
+        logs: [],
+        pagination: buildPaginationMeta(0, page, limit),
+        tableMissing: true,
+        message: 'Audit logs table is missing or unmigrated.'
+      });
+    }
+  },
+
+  async getLoginHistory(req, res) {
+    const { page, limit } = getPagination(req.query);
+    const { search, success, export: exportCSV } = req.query;
+
+    try {
+      let whereClause = 'WHERE 1=1';
+      const params = [];
+      let paramCount = 1;
+
+      if (success !== undefined && success !== '') {
+        whereClause += ` AND l.success = $${paramCount++}`;
+        params.push(success === 'true');
+      }
+
+      if (search) {
+        whereClause += ` AND (l.email ILIKE $${paramCount} OR l.ip_address ILIKE $${paramCount})`;
+        params.push(`%${search}%`);
+        paramCount++;
+      }
+
+      if (exportCSV === 'true' || exportCSV === 'csv') {
+        const result = await query(
+          `SELECT l.id, l.email, l.success, l.reason, l.ip_address, l.user_agent, l.created_at
+           FROM login_history l
+           ${whereClause}
+           ORDER BY l.created_at DESC
+           LIMIT 500`,
+          params
+        );
+
+        const sanitize = (v) => {
+          if (v == null) return '""';
+          let str = String(v).replace(/"/g, '""');
+          if (/^[=+@\-\t\r]/.test(str)) str = `'${str}`;
+          return `"${str}"`;
+        };
+
+        const headers = ['ID', 'Email', 'Success', 'Reason', 'IP Address', 'User Agent', 'Created At'];
+        const rows = result.rows.map(r => [
+          sanitize(r.id),
+          sanitize(r.email),
+          sanitize(r.success),
+          sanitize(r.reason),
+          sanitize(r.ip_address),
+          sanitize(r.user_agent),
+          sanitize(r.created_at)
+        ]);
+
+        const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="login_history.csv"');
+        return res.status(200).send(csvContent);
+      }
+
+      const offset = (page - 1) * limit;
+      const countResult = await query(
+        `SELECT COUNT(*) FROM login_history l ${whereClause}`,
+        params
+      );
+
+      params.push(limit, offset);
+      const result = await query(
+        `SELECT l.id, l.user_id, l.email, l.ip_address, l.user_agent, l.success, l.reason, l.created_at
+         FROM login_history l
+         ${whereClause}
+         ORDER BY l.created_at DESC
+         LIMIT $${paramCount} OFFSET $${paramCount + 1}`,
+        params
+      );
+
+      return sendSuccess(res, {
+        history: result.rows,
+        pagination: buildPaginationMeta(parseInt(countResult.rows[0].count), page, limit),
+        tableMissing: false
+      });
+    } catch (err) {
+      console.warn('Login history query degraded (table missing or error):', err.message);
+      return sendSuccess(res, {
+        history: [],
+        pagination: buildPaginationMeta(0, page, limit),
+        tableMissing: true,
+        message: 'Login history table is missing or unmigrated.'
+      });
+    }
   }
 };
 

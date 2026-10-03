@@ -97,10 +97,13 @@ export const notificationService = {
 export const adminService = {
   getDashboard: () => api.get('/admin/dashboard'),
   getActivityLogs: (params) => api.get('/admin/activity-logs', { params }),
+  getAuditLogs: (params) => api.get('/admin/audit-logs', { params }),
+  getLoginHistory: (params) => api.get('/admin/login-history', { params }),
   getSettings: () => api.get('/admin/settings'),
   updateSettings: (settings) => api.put('/admin/settings', { settings }),
   deactivateUser: (id) => api.patch(`/admin/users/${id}/deactivate`),
   activateUser: (id) => api.patch(`/admin/users/${id}/activate`),
+  unlockUser: (id) => api.patch(`/admin/users/${id}/unlock`),
 };
 
 export const departmentService = {
@@ -146,4 +149,25 @@ export const analyticsService = {
   getDepartmentsAnalytics: (params) => api.get('/analytics/departments', { params }),
   getDoctorsAnalytics: (params) => api.get('/analytics/doctors', { params }),
   exportCSV: (params) => api.get('/analytics/export.csv', { params, responseType: 'blob' }),
+};
+
+export const labService = {
+  getTests: (params) => api.get('/lab/tests', { params }),
+  getTestById: (id) => api.get(`/lab/tests/${id}`),
+  createTest: (data) => api.post('/lab/tests', data),
+  updateTest: (id, data) => api.put(`/lab/tests/${id}`, data),
+  toggleTestStatus: (id) => api.patch(`/lab/tests/${id}/status`),
+  createDoctorOrders: (data) => api.post('/lab/orders', data),
+  bookPatientOrders: (data) => api.post('/lab/orders/book', data),
+  cancelOrder: (id) => api.post(`/lab/orders/${id}/cancel`),
+  getMyOrders: (params) => api.get('/lab/orders/my', { params }),
+  getDoctorOrders: (params) => api.get('/lab/orders/doctor', { params }),
+  getAllOrders: (params) => api.get('/lab/orders', { params }),
+  getOrderById: (id) => api.get(`/lab/orders/${id}`),
+  updateOrderStatus: (id, status) => api.patch(`/lab/orders/${id}/status`, { status }),
+  submitResult: (id, data) => api.put(`/lab/orders/${id}/result`, data),
+  uploadFiles: (id, formData) => api.post(`/lab/orders/${id}/files`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  downloadFile: (fileId) => api.get(`/lab/files/${fileId}/download`, { responseType: 'blob' }),
+  deleteFile: (fileId) => api.delete(`/lab/files/${fileId}`),
+  addToInvoice: (id) => api.post(`/lab/orders/${id}/add-to-invoice`),
 };
