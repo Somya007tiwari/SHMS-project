@@ -1,6 +1,9 @@
 require('dotenv').config();
 require('express-async-errors');
 
+const { validateEnv } = require('./src/utils/envCheck');
+validateEnv();
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
