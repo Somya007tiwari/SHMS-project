@@ -28,6 +28,7 @@ import {
   Clock,
   BarChart3,
   ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 
 // ===============================
@@ -69,6 +70,7 @@ const DOCTOR_NAV = [
 
 const PATIENT_NAV = [
   { path: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/patient/emergency-card", label: "Emergency Card 🚨", icon: ShieldAlert },
   { path: "/patient/ai-assistant", label: "AI Health Assistant", icon: Sparkles },
   {
     path: "/patient/book-appointment",

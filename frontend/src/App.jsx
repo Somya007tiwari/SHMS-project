@@ -56,6 +56,8 @@ const PatientLabTests = lazy(() => import('./pages/patient/PatientLabTests'));
 const PatientAIAssistant = lazy(() => import('./pages/patient/PatientAIAssistant'));
 const PublicVerifyPrescription = lazy(() => import('./pages/PublicVerifyPrescription'));
 const PublicSharedPrescription = lazy(() => import('./pages/PublicSharedPrescription'));
+const PublicEmergencyCard = lazy(() => import('./pages/PublicEmergencyCard'));
+const PatientEmergencyCard = lazy(() => import('./pages/patient/PatientEmergencyCard'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -127,9 +129,10 @@ const App = () => {
                 <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
                 <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
-                {/* Public Verification and Share Routes */}
+                {/* Public Verification, Share, and Emergency Card Routes */}
                 <Route path="/verify/:code" element={<PublicVerifyPrescription />} />
                 <Route path="/prescriptions/shared/:token" element={<PublicSharedPrescription />} />
+                <Route path="/emergency/:token" element={<PublicEmergencyCard />} />
 
                 {/* Public Doctor Profile */}
                 <Route path="/doctors/:id" element={<DoctorProfile />} />
@@ -173,6 +176,7 @@ const App = () => {
                   <Route path="patient/lab-tests" element={<ProtectedRoute roles={['patient']}><PatientLabTests /></ProtectedRoute>} />
                   <Route path="patient/reports" element={<ProtectedRoute roles={['patient']}><PatientReports /></ProtectedRoute>} />
                   <Route path="patient/billing" element={<ProtectedRoute roles={['patient']}><PatientBilling /></ProtectedRoute>} />
+                  <Route path="patient/emergency-card" element={<ProtectedRoute roles={['patient']}><PatientEmergencyCard /></ProtectedRoute>} />
                   <Route path="patient/ai-assistant" element={<ProtectedRoute roles={['patient']}><PatientAIAssistant /></ProtectedRoute>} />
 
                   {/* Shared */}

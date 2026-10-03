@@ -183,3 +183,10 @@ export const labService = {
 export const assistantService = {
   analyze: (data) => api.post('/assistant/analyze', data),
 };
+
+export const emergencyCardService = {
+  getMyCard: () => api.get('/emergency-card/me'),
+  updateMyCard: (data) => api.put('/emergency-card/me', data),
+  regenerateToken: () => api.post('/emergency-card/me/regenerate'),
+  getPublicCard: (token) => api.get(`/emergency-card/public/${token}`),
+};

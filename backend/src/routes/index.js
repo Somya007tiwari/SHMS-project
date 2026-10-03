@@ -18,5 +18,6 @@ router.use('/assistant', require('./aiRoutes'));
 router.use('/invoices', require('./invoiceRoutes'));
 router.use('/analytics', require('./analyticsRoutes'));
 router.use('/lab', require('./labRoutes'));
+router.use('/emergency-card', require('./emergencyCardRoutes'));
 
 module.exports = router;

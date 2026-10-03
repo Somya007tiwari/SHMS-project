@@ -89,6 +89,7 @@ app.use('/api/', generalLimiter);
 
 // ─── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/v1', routes);
+app.use('/api', routes);
 // ─── Root Route ─────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
