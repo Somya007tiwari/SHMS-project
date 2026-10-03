@@ -14,7 +14,9 @@ router.use('/admin', require('./adminRoutes'));
 router.use('/reviews', require('./reviewRoutes'));
 router.use('/medical-records', require('./medicalRecordRoutes'));
 router.use('/ai', require('./aiRoutes'));
+router.use('/assistant', require('./aiRoutes'));
 router.use('/invoices', require('./invoiceRoutes'));
 router.use('/analytics', require('./analyticsRoutes'));
+router.use('/lab', require('./labRoutes'));
 
 module.exports = router;

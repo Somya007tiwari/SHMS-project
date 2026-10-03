@@ -1,20 +1,44 @@
 const aiAssistantService = require('../services/aiAssistantService');
-const { sendSuccess } = require('../utils/responseHandler');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
+const auditService = require('../services/auditService');
 
 const aiAssistantController = {
   async getWelcome(req, res) {
-    const welcome = aiAssistantService.getWelcomeMessage();
-    return sendSuccess(res, welcome);
+    return sendSuccess(res, {
+      message: 'Welcome to the SHMS AI Health Assistant. Describe your symptoms for informational triage guidance.',
+      type: 'info'
+    });
   },
 
-  async chat(req, res) {
-    const { message, conversationHistory = [] } = req.body;
-    if (!message || !message.trim()) {
-      return sendSuccess(res, { message: 'Please enter a message.', type: 'error' });
+  async analyze(req, res) {
+    const { symptoms, age, gender, durationDays, language = 'en' } = req.body;
+
+    const result = await aiAssistantService.analyzeSymptoms({
+      symptoms,
+      age,
+      gender,
+      durationDays,
+      language,
+      userId: req.user.userId
+    });
+
+    if (result.limitExceeded) {
+      return res.status(429).json({
+        success: false,
+        message: result.message
+      });
     }
 
-    const response = aiAssistantService.processMessage(message, conversationHistory);
-    return sendSuccess(res, response);
+    // Audit log only records that an assistant request happened (NEVER symptom text)
+    await auditService.log(
+      req,
+      'view',
+      'ai_assistant',
+      req.user.userId,
+      `AI Assistant query processed (mode: ${result.mode}, emergency: ${result.emergency})`
+    );
+
+    return sendSuccess(res, result);
   }
 };
 

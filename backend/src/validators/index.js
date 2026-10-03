@@ -123,6 +123,16 @@ const createLabOrderSchema = z.object({
   })
 });
 
+const analyzeSymptomsSchema = z.object({
+  body: z.object({
+    symptoms: z.string().trim().min(3, 'Symptoms description must be at least 3 characters long').max(1000, 'Symptoms input exceeds maximum length'),
+    age: z.coerce.number().min(0, 'Age must be 0 or greater').max(120, 'Age must be 120 or less').optional().nullable(),
+    gender: z.enum(['female', 'male', 'other']).optional().nullable(),
+    durationDays: z.coerce.number().min(0).max(365).optional().nullable(),
+    language: z.enum(['en', 'hi']).optional().nullable()
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -134,5 +144,6 @@ module.exports = {
   createPrescriptionSchema,
   createInvoiceSchema,
   addPaymentSchema,
-  createLabOrderSchema
+  createLabOrderSchema,
+  analyzeSymptomsSchema
 };
