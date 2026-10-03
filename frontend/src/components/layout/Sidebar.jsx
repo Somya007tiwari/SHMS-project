@@ -69,6 +69,7 @@ const DOCTOR_NAV = [
 
 const PATIENT_NAV = [
   { path: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/patient/ai-assistant", label: "AI Health Assistant", icon: Sparkles },
   {
     path: "/patient/book-appointment",
     label: "Book Appointment",

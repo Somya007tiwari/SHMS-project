@@ -171,3 +171,7 @@ export const labService = {
   deleteFile: (fileId) => api.delete(`/lab/files/${fileId}`),
   addToInvoice: (id) => api.post(`/lab/orders/${id}/add-to-invoice`),
 };
+
+export const assistantService = {
+  analyze: (data) => api.post('/assistant/analyze', data),
+};

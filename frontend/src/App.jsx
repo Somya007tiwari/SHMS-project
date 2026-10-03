@@ -53,6 +53,7 @@ const AdminLabTests = lazy(() => import('./pages/admin/AdminLabTests'));
 const AdminLabOrders = lazy(() => import('./pages/admin/AdminLabOrders'));
 const DoctorLabOrders = lazy(() => import('./pages/doctor/DoctorLabOrders'));
 const PatientLabTests = lazy(() => import('./pages/patient/PatientLabTests'));
+const PatientAIAssistant = lazy(() => import('./pages/patient/PatientAIAssistant'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -166,11 +167,12 @@ const App = () => {
                   <Route path="patient/lab-tests" element={<ProtectedRoute roles={['patient']}><PatientLabTests /></ProtectedRoute>} />
                   <Route path="patient/reports" element={<ProtectedRoute roles={['patient']}><PatientReports /></ProtectedRoute>} />
                   <Route path="patient/billing" element={<ProtectedRoute roles={['patient']}><PatientBilling /></ProtectedRoute>} />
+                  <Route path="patient/ai-assistant" element={<ProtectedRoute roles={['patient']}><PatientAIAssistant /></ProtectedRoute>} />
 
                   {/* Shared */}
                   <Route path="doctors/:id" element={<DoctorProfile />} />
                   <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                  <Route path="ai-assistant" element={<ProtectedRoute><AIAssistant /></ProtectedRoute>} />
+                  <Route path="ai-assistant" element={<ProtectedRoute><PatientAIAssistant /></ProtectedRoute>} />
                   <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 </Route>
 

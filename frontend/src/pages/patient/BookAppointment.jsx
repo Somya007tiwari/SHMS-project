@@ -61,7 +61,7 @@ const BookAppointment = () => {
   const [symptoms, setSymptoms] = useState("");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [deptFilter, setDeptFilter] = useState("");
+  const [deptFilter, setDeptFilter] = useState(searchParams.get("departmentId") || "");
   const [sortBy, setSortBy] = useState("");
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [booking, setBooking] = useState(false);
