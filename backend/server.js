@@ -1,4 +1,8 @@
-require('dotenv').config();
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
+
 require('express-async-errors');
 
 const { validateEnv } = require('./src/utils/envCheck');
@@ -11,7 +15,6 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 
-const path = require('path');
 const routes = require('./src/routes');
 const { errorHandler } = require('./src/middleware/errorHandler');
 const { generalLimiter } = require('./src/middleware/rateLimiter');

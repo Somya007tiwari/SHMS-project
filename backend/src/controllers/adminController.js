@@ -115,6 +115,8 @@ const adminController = {
     return sendSuccess(res, null, 'User deactivated successfully');
   },
 
+  async activateUser(req, res) {
+    const { id } = req.params;
     await query('UPDATE users SET is_active = true WHERE id = $1', [id]);
     return sendSuccess(res, null, 'User activated successfully');
   },
