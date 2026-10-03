@@ -426,6 +426,42 @@ const doctorController = {
     const leaves = await DoctorLeave.getByDoctorId(req.params.id);
     return sendSuccess(res, leaves);
   },
+
+  async uploadSignature(req, res) {
+    const doctorId = req.user.doctorId;
+    if (!doctorId) return sendError(res, "Doctor profile not found", 404);
+
+    if (!req.uploadedFile || !req.uploadedFile.url) {
+      return sendError(res, "Signature image is required (PNG/JPG, max 500KB)", 400);
+    }
+
+    try {
+      const updated = await Doctor.updateSignature(doctorId, req.uploadedFile.url);
+      await auditService.log(req, "upload", "doctor_signature", doctorId, "Uploaded doctor signature image");
+      return sendSuccess(res, updated, "Doctor signature uploaded successfully");
+    } catch (err) {
+      if (err.message?.includes('column "signature_url" does not exist')) {
+        return sendError(res, "Doctor signature column missing. Run Phase 14.1 migration.", 400);
+      }
+      return sendError(res, "Failed to upload doctor signature", 500);
+    }
+  },
+
+  async deleteSignature(req, res) {
+    const doctorId = req.user.doctorId;
+    if (!doctorId) return sendError(res, "Doctor profile not found", 404);
+
+    try {
+      await Doctor.updateSignature(doctorId, null);
+      await auditService.log(req, "delete", "doctor_signature", doctorId, "Deleted doctor signature image");
+      return sendSuccess(res, null, "Doctor signature removed successfully");
+    } catch (err) {
+      if (err.message?.includes('column "signature_url" does not exist')) {
+        return sendError(res, "Doctor signature column missing. Run Phase 14.1 migration.", 400);
+      }
+      return sendError(res, "Failed to delete doctor signature", 500);
+    }
+  },
 };
 
 module.exports = doctorController;

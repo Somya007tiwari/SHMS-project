@@ -6,7 +6,7 @@ class Doctor {
     const result = await query(
       `SELECT d.id, d.user_id, d.department_id, d.specialization, d.qualification,
               d.experience_years, d.registration_number, d.consultation_fee, d.bio,
-              d.languages_spoken, d.is_available, d.rating, d.total_reviews, d.room_number,
+              d.languages_spoken, d.is_available, d.rating, d.total_reviews, d.room_number, d.signature_url,
               d.created_at, d.updated_at,
               u.first_name, u.last_name, u.email, u.phone, u.profile_image_url, u.profile_image_public_id, u.is_active,
               dep.name as department_name, dep.description as department_description
@@ -23,7 +23,7 @@ class Doctor {
     const result = await query(
       `SELECT d.id, d.user_id, d.department_id, d.specialization, d.qualification,
               d.experience_years, d.registration_number, d.consultation_fee, d.bio,
-              d.languages_spoken, d.is_available, d.rating, d.total_reviews, d.room_number,
+              d.languages_spoken, d.is_available, d.rating, d.total_reviews, d.room_number, d.signature_url,
               d.created_at, d.updated_at,
               u.first_name, u.last_name, u.email, u.phone, u.profile_image_url, u.profile_image_public_id, u.is_active,
               dep.name as department_name
@@ -34,6 +34,21 @@ class Doctor {
       [userId],
     );
     return result.rows[0] || null;
+  }
+
+  static async updateSignature(doctorId, signatureUrl) {
+    try {
+      const result = await query(
+        `UPDATE doctors SET signature_url = $1, updated_at = NOW() WHERE id = $2 RETURNING id, signature_url`,
+        [signatureUrl, doctorId]
+      );
+      return result.rows[0];
+    } catch (err) {
+      if (err.message?.includes('column "signature_url" does not exist')) {
+        throw new Error('Doctor signature column missing. Run Phase 14.1 migration.');
+      }
+      throw err;
+    }
   }
 
   static async createWithUser({ userData, doctorData, uploadedFile }) {

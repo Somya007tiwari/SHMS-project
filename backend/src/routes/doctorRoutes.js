@@ -15,7 +15,8 @@ router.get("/me/patients", authenticate, authorize("doctor"), doctorController.g
 router.put("/me/schedule", authenticate, authorize("doctor"), doctorController.updateSchedule);
 router.post("/me/leaves", authenticate, authorize("doctor"), doctorController.createLeave);
 router.get("/me/leaves", authenticate, authorize("doctor"), doctorController.getMyLeaves);
-router.delete("/me/leaves/:id", authenticate, authorize("doctor"), doctorController.deleteLeave);
+router.post("/me/signature", authenticate, authorize("doctor"), imageUpload.single("signature"), uploadToCloud("shms/signatures"), doctorController.uploadSignature);
+router.delete("/me/signature", authenticate, authorize("doctor"), doctorController.deleteSignature);
 
 // Doctor by ID routes
 router.get("/:id", doctorController.getById);

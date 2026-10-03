@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { query, transaction } = require('../config/database');
 
 class Prescription {
@@ -62,24 +63,50 @@ class Prescription {
 
   static async createWithTransaction({ patientId, doctorId, appointmentId, medicalRecordId, diagnosis, advice, followUpDate, items }) {
     const prescriptionNumber = await this.generatePrescriptionNumber();
+    const verificationCode = crypto.randomBytes(16).toString('hex');
 
     return transaction(async (client) => {
-      const res = await client.query(
-        `INSERT INTO prescriptions 
-          (prescription_number, patient_id, doctor_id, appointment_id, medical_record_id, diagnosis, advice, follow_up_date)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING *`,
-        [
-          prescriptionNumber,
-          patientId,
-          doctorId,
-          appointmentId || null,
-          medicalRecordId || null,
-          diagnosis.trim(),
-          advice ? advice.trim() : null,
-          followUpDate || null
-        ]
-      );
+      let res;
+      try {
+        res = await client.query(
+          `INSERT INTO prescriptions 
+            (prescription_number, patient_id, doctor_id, appointment_id, medical_record_id, diagnosis, advice, follow_up_date, verification_code)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           RETURNING *`,
+          [
+            prescriptionNumber,
+            patientId,
+            doctorId,
+            appointmentId || null,
+            medicalRecordId || null,
+            diagnosis.trim(),
+            advice ? advice.trim() : null,
+            followUpDate || null,
+            verificationCode
+          ]
+        );
+      } catch (err) {
+        if (err.message?.includes('column "verification_code" does not exist')) {
+          res = await client.query(
+            `INSERT INTO prescriptions 
+              (prescription_number, patient_id, doctor_id, appointment_id, medical_record_id, diagnosis, advice, follow_up_date)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             RETURNING *`,
+            [
+              prescriptionNumber,
+              patientId,
+              doctorId,
+              appointmentId || null,
+              medicalRecordId || null,
+              diagnosis.trim(),
+              advice ? advice.trim() : null,
+              followUpDate || null
+            ]
+          );
+        } else {
+          throw err;
+        }
+      }
 
       const prescription = res.rows[0];
 
@@ -164,7 +191,7 @@ class Prescription {
               du.id as doctor_user_id,
               du.first_name || ' ' || du.last_name as doctor_name,
               du.email as doctor_email,
-              doc.specialization, doc.qualification, doc.registration_number, doc.room_number,
+              doc.specialization, doc.qualification, doc.registration_number, doc.room_number, doc.signature_url,
               dep.name as department_name
        FROM prescriptions pr
        JOIN patients p ON pr.patient_id = p.id
@@ -180,6 +207,16 @@ class Prescription {
     const prescription = result.rows[0];
     if (!prescription) return null;
 
+    if (!prescription.verification_code) {
+      try {
+        const vCode = crypto.randomBytes(16).toString('hex');
+        await query('UPDATE prescriptions SET verification_code = $1 WHERE id = $2', [vCode, id]);
+        prescription.verification_code = vCode;
+      } catch (err) {
+        // Ignore if column doesn't exist yet
+      }
+    }
+
     const itemsRes = await query(
       `SELECT * FROM prescription_items WHERE prescription_id = $1 ORDER BY sort_order ASC, created_at ASC`,
       [id]
@@ -190,6 +227,41 @@ class Prescription {
       items: itemsRes.rows,
       allergies: prescription.health_profile_allergies || prescription.allergies || ''
     };
+  }
+
+  static async verifyCode(code) {
+    if (!code || typeof code !== 'string' || code.trim().length < 16) {
+      return { valid: false };
+    }
+    try {
+      const result = await query(
+        `SELECT pr.id, pr.prescription_number, pr.created_at as issue_date,
+                du.first_name || ' ' || du.last_name as doctor_name,
+                doc.specialization
+         FROM prescriptions pr
+         JOIN doctors doc ON pr.doctor_id = doc.id
+         JOIN users du ON doc.user_id = du.id
+         WHERE pr.verification_code = $1`,
+        [code.trim()]
+      );
+      if (!result.rows.length) {
+        return { valid: false };
+      }
+      const r = result.rows[0];
+      return {
+        valid: true,
+        prescriptionNumber: r.prescription_number,
+        issueDate: r.issue_date,
+        doctorName: `Dr. ${r.doctor_name}`,
+        specialization: r.specialization || 'General Practice',
+        hospitalName: 'Smart Hospital Management System'
+      };
+    } catch (err) {
+      if (err.message?.includes('column "verification_code" does not exist')) {
+        throw new Error('Prescription verification column missing. Run Phase 14.1 migration.');
+      }
+      throw err;
+    }
   }
 
   static async getByPatient(patientId, { page = 1, limit = 10 } = {}) {

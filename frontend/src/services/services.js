@@ -27,6 +27,8 @@ export const doctorService = {
   getLeaves: (doctorId) => api.get(`/doctors/${doctorId}/leaves`),
   update: (id, data) => api.put(`/doctors/${id}`, data),
   create: (data) => api.post('/doctors', data),
+  uploadSignature: (formData) => api.post('/doctors/me/signature', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  deleteSignature: () => api.delete('/doctors/me/signature'),
 };
 
 export const patientService = {
@@ -47,6 +49,12 @@ export const prescriptionService = {
   getById: (id) => api.get(`/prescriptions/${id}`),
   getMedicineSuggestions: (q) => api.get('/prescriptions/medicine-suggestions', { params: { q } }),
   downloadPDF: (id) => api.get(`/prescriptions/${id}/pdf`, { responseType: 'blob' }),
+  verifyCode: (code) => api.get(`/prescriptions/verify/${code}`),
+  createShare: (id, data) => api.post(`/prescriptions/${id}/share`, data),
+  getShares: (id) => api.get(`/prescriptions/${id}/shares`),
+  revokeShare: (shareId) => api.delete(`/prescriptions/shares/${shareId}`),
+  getSharedPrescription: (token) => api.get(`/prescriptions/shared/${token}`),
+  downloadSharedPDF: (token) => api.get(`/prescriptions/shared/${token}/pdf`, { responseType: 'blob' }),
 };
 
 export const billingService = {

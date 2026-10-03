@@ -54,6 +54,8 @@ const AdminLabOrders = lazy(() => import('./pages/admin/AdminLabOrders'));
 const DoctorLabOrders = lazy(() => import('./pages/doctor/DoctorLabOrders'));
 const PatientLabTests = lazy(() => import('./pages/patient/PatientLabTests'));
 const PatientAIAssistant = lazy(() => import('./pages/patient/PatientAIAssistant'));
+const PublicVerifyPrescription = lazy(() => import('./pages/PublicVerifyPrescription'));
+const PublicSharedPrescription = lazy(() => import('./pages/PublicSharedPrescription'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +126,10 @@ const App = () => {
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                 <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
                 <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+
+                {/* Public Verification and Share Routes */}
+                <Route path="/verify/:code" element={<PublicVerifyPrescription />} />
+                <Route path="/prescriptions/shared/:token" element={<PublicSharedPrescription />} />
 
                 {/* Public Doctor Profile */}
                 <Route path="/doctors/:id" element={<DoctorProfile />} />

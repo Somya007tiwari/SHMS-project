@@ -1,7 +1,10 @@
+const fs = require('fs');
+const path = require('path');
 const PDFDocument = require('pdfkit');
 const dayjs = require('dayjs');
+const QRCode = require('qrcode');
 
-const generatePrescriptionPDF = (prescription, res) => {
+const generatePrescriptionPDF = async (prescription, res) => {
   const doc = new PDFDocument({ margin: 40, size: 'A4' });
 
   const filename = `prescription-${prescription.prescription_number || 'details'}.pdf`;
@@ -209,12 +212,45 @@ const generatePrescriptionPDF = (prescription, res) => {
     y += 25;
   }
 
-  // 6. Doctor Signature Block
-  if (y > 720) {
+  // 6. Doctor Signature & Verification QR Block
+  if (y > 700) {
     doc.addPage();
     y = 50;
   } else {
-    y = Math.max(y + 20, 680);
+    y = Math.max(y + 20, 675);
+  }
+
+  // QR Code on bottom left
+  if (prescription.verification_code) {
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const verifyUrl = `${frontendUrl}/verify/${prescription.verification_code}`;
+      const qrBuffer = await QRCode.toBuffer(verifyUrl, { width: 70, margin: 1 });
+      doc.image(qrBuffer, 45, y - 35, { width: 55 });
+      doc
+        .fillColor('#64748B')
+        .fontSize(7)
+        .font('Helvetica')
+        .text('Scan to Verify', 45, y + 23, { width: 55, align: 'center' });
+    } catch (err) {
+      console.error('QR code generation error:', err.message);
+    }
+  }
+
+  // Doctor Signature Image on bottom right
+  if (prescription.signature_url) {
+    try {
+      let sigPath = null;
+      if (prescription.signature_url.includes('/uploads/')) {
+        const rel = prescription.signature_url.split('/uploads/')[1];
+        sigPath = path.join(__dirname, '../../uploads', rel);
+      }
+      if (sigPath && fs.existsSync(sigPath)) {
+        doc.image(sigPath, 425, y - 35, { fit: [80, 30], align: 'center' });
+      }
+    } catch (err) {
+      console.error('Signature embed error:', err.message);
+    }
   }
 
   doc

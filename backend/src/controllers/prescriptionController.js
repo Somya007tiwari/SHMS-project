@@ -8,6 +8,8 @@ const auditService = require('../services/auditService');
 const notificationService = require('../services/notificationService');
 const { generatePrescriptionPDF } = require('../utils/pdfGenerator');
 
+const PrescriptionShare = require('../models/PrescriptionShare');
+
 const EDIT_WINDOW_HOURS = 24;
 
 const prescriptionController = {
@@ -251,6 +253,128 @@ const prescriptionController = {
 
     await auditService.log(req, 'download', 'prescription_pdf', id, `Downloaded PDF for ${prescription.prescription_number}`);
     return generatePrescriptionPDF(prescription, res);
+  },
+
+  // Public GET /api/v1/prescriptions/verify/:code
+  async verifyCode(req, res) {
+    const { code } = req.params;
+    try {
+      const data = await Prescription.verifyCode(code);
+      if (!data || !data.valid) {
+        return res.status(200).json({ success: true, data: { valid: false } });
+      }
+      return sendSuccess(res, data, 'Prescription verified');
+    } catch (err) {
+      if (err.message?.includes('column "verification_code" does not exist')) {
+        return sendError(res, 'Prescription verification column missing. Run Phase 14.1 migration.', 400);
+      }
+      return sendError(res, 'Verification failed', 500);
+    }
+  },
+
+  // Patient POST /api/v1/prescriptions/:id/share
+  async createShare(req, res) {
+    if (req.user.role !== 'patient') {
+      return sendError(res, 'Only patients can create share links for their prescriptions', 403);
+    }
+    const { id } = req.params;
+    const prescription = await Prescription.findById(id);
+    if (!prescription) return sendError(res, 'Prescription not found', 404);
+
+    const ownPatient = await Patient.findByUserId(req.user.userId);
+    if (!ownPatient || ownPatient.id !== prescription.patient_id) {
+      return sendError(res, 'Access denied', 403);
+    }
+
+    const { expiresInDays = 3 } = req.body;
+    try {
+      const shareData = await PrescriptionShare.createShare({
+        prescriptionId: id,
+        expiresInDays,
+        createdBy: req.user.userId
+      });
+
+      await auditService.log(req, 'create', 'prescription_share', shareData.id, `Created ${expiresInDays}-day share link`);
+      return sendCreated(res, shareData, 'Share link created successfully');
+    } catch (err) {
+      if (err.message?.includes('relation "prescription_shares" does not exist')) {
+        return sendError(res, 'Prescription shares table missing. Run Phase 14.1 migration.', 400);
+      }
+      return sendError(res, err.message || 'Failed to create share link', 500);
+    }
+  },
+
+  // Patient GET /api/v1/prescriptions/:id/shares
+  async getShares(req, res) {
+    if (req.user.role !== 'patient') {
+      return sendError(res, 'Access denied', 403);
+    }
+    const { id } = req.params;
+    const prescription = await Prescription.findById(id);
+    if (!prescription) return sendError(res, 'Prescription not found', 404);
+
+    const ownPatient = await Patient.findByUserId(req.user.userId);
+    if (!ownPatient || ownPatient.id !== prescription.patient_id) {
+      return sendError(res, 'Access denied', 403);
+    }
+
+    const shares = await PrescriptionShare.getActiveShares(id);
+    return sendSuccess(res, shares);
+  },
+
+  // Patient DELETE /api/v1/prescriptions/shares/:shareId
+  async revokeShare(req, res) {
+    const { shareId } = req.params;
+    const revoked = await PrescriptionShare.revokeShare(shareId, req.user.userId);
+    if (!revoked) {
+      return sendError(res, 'Share link not found or access denied', 404);
+    }
+
+    await auditService.log(req, 'cancel', 'prescription_share', shareId, 'Revoked prescription share link');
+    return sendSuccess(res, null, 'Share link revoked successfully');
+  },
+
+  // Public GET /api/v1/prescriptions/shared/:token
+  async getSharedPrescription(req, res) {
+    const { token } = req.params;
+    try {
+      const result = await PrescriptionShare.getSharedPrescription(token);
+      if (result.expired) {
+        return res.status(410).json({
+          success: false,
+          message: 'This share link has expired or been revoked.'
+        });
+      }
+      return sendSuccess(res, result.prescription);
+    } catch (err) {
+      if (err.message?.includes('relation "prescription_shares" does not exist')) {
+        return sendError(res, 'Prescription shares table missing. Run Phase 14.1 migration.', 400);
+      }
+      return sendError(res, 'Failed to load shared prescription', 500);
+    }
+  },
+
+  // Public GET /api/v1/prescriptions/shared/:token/pdf
+  async downloadSharedPDF(req, res) {
+    const { token } = req.params;
+    try {
+      const result = await PrescriptionShare.getSharedPrescription(token);
+      if (result.expired || !result.prescription) {
+        return res.status(410).json({
+          success: false,
+          message: 'This share link has expired or been revoked.'
+        });
+      }
+
+      const fullPrescription = await Prescription.findById(result.prescription.id);
+      await auditService.log(req, 'download', 'prescription_shared_pdf', result.prescription.id, 'Downloaded shared PDF');
+      return generatePrescriptionPDF(fullPrescription, res);
+    } catch (err) {
+      if (err.message?.includes('relation "prescription_shares" does not exist')) {
+        return sendError(res, 'Prescription shares table missing. Run Phase 14.1 migration.', 400);
+      }
+      return sendError(res, 'Failed to download shared PDF', 500);
+    }
   }
 };
 

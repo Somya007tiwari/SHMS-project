@@ -11,16 +11,19 @@ import {
   ChevronRight,
   Stethoscope,
   X,
-  Clock
+  Clock,
+  Share2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
+import SharePrescriptionModal from '../../components/prescriptions/SharePrescriptionModal';
 
 const PatientPrescriptions = () => {
   const { isDark } = useTheme();
 
   const [page, setPage] = useState(1);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [shareModalPrescription, setShareModalPrescription] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['patient-prescriptions', page],
@@ -123,6 +126,12 @@ const PatientPrescriptions = () => {
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShareModalPrescription(p); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors"
+                  >
+                    <Share2 size={14} /> Share
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownloadPDF(p.id, p.prescription_number); }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 transition-colors"
@@ -291,6 +300,13 @@ const PatientPrescriptions = () => {
           </div>
         </div>
       )}
+
+      {/* Share Modal */}
+      <SharePrescriptionModal
+        isOpen={!!shareModalPrescription}
+        onClose={() => setShareModalPrescription(null)}
+        prescription={shareModalPrescription}
+      />
     </div>
   );
 };

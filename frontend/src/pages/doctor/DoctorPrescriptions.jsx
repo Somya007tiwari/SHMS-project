@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
+import SignatureUploadModal from '../../components/doctor/SignatureUploadModal';
 
 const COMMON_FREQUENCIES = [
   '1-0-1 (Twice a day)',
@@ -47,6 +48,7 @@ const DoctorPrescriptions = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   // Form State
   const [selectedPatientId, setSelectedPatientId] = useState('');
@@ -270,12 +272,20 @@ const DoctorPrescriptions = () => {
         </div>
 
         {activeView === 'list' && (
-          <button
-            onClick={handleStartAdd}
-            className="btn-primary px-4 py-2 text-sm font-semibold flex items-center gap-2 self-start sm:self-auto"
-          >
-            <Plus size={18} /> New Prescription
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={() => setShowSignatureModal(true)}
+              className="px-3 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1.5 transition-colors"
+            >
+              <FileText size={16} /> Digital Signature
+            </button>
+            <button
+              onClick={handleStartAdd}
+              className="btn-primary px-4 py-2 text-sm font-semibold flex items-center gap-2"
+            >
+              <Plus size={18} /> New Prescription
+            </button>
+          </div>
         )}
 
         {activeView !== 'list' && (
@@ -766,6 +776,12 @@ const DoctorPrescriptions = () => {
           </div>
         </div>
       )}
+
+      {/* Doctor Signature Upload Modal */}
+      <SignatureUploadModal
+        isOpen={showSignatureModal}
+        onClose={() => setShowSignatureModal(false)}
+      />
     </div>
   );
 };
