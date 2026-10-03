@@ -67,6 +67,14 @@ function validateEnv() {
     else warnings.push(msg);
   }
 
+  // 3. Check AI Provider Key status (Optional, warning only)
+  if (!process.env.AI_PROVIDER_KEY) {
+    warnings.push('AI_PROVIDER_KEY is not set. AI Health Assistant will run in rule-based fallback mode.');
+    console.log('ℹ️ AI Health Assistant: Rule-based mode active (No API key provided)');
+  } else {
+    console.log('🤖 AI Health Assistant: Anthropic AI mode active');
+  }
+
   // Log warnings in development
   if (warnings.length > 0) {
     console.warn('⚠️ Environment warnings:');
