@@ -24,9 +24,10 @@ router.get("/:id/leaves", doctorController.getDoctorLeaves);
 
 // Public doctor review routes
 const reviewController = require("../controllers/reviewController");
+const { writeLimiter } = require("../middleware/rateLimiter");
 router.get("/:id/reviews", reviewController.getByDoctor);
 router.get("/:id/rating-summary", reviewController.getSummary);
-router.post("/:id/reviews", authenticate, authorize("patient"), reviewController.create);
+router.post("/:id/reviews", authenticate, authorize("patient"), writeLimiter, reviewController.create);
 
 // Admin & Doctor write routes
 router.put(

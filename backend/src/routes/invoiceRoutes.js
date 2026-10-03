@@ -12,11 +12,13 @@ router.get('/export.csv', authenticate, authorize('admin'), invoiceController.ex
 router.get('/', authenticate, authorize('admin'), invoiceController.getAll);
 router.post('/', authenticate, authorize('admin'), invoiceController.create);
 
+const { writeLimiter } = require('../middleware/rateLimiter');
+
 // ─── Parameterized Routes ───────────────────────────────────────────────────
 router.get('/:id/pdf', authenticate, invoiceController.downloadPDF);
 router.get('/:id', authenticate, invoiceController.getById);
 router.put('/:id', authenticate, authorize('admin'), invoiceController.update);
-router.post('/:id/payments', authenticate, authorize('admin'), invoiceController.addPayment);
+router.post('/:id/payments', authenticate, authorize('admin'), writeLimiter, invoiceController.addPayment);
 router.put('/:id/cancel', authenticate, authorize('admin'), invoiceController.cancel);
 
 module.exports = router;
