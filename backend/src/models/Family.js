@@ -46,6 +46,15 @@ class Family {
     try {
       const { firstName, lastName, relation, dateOfBirth, gender, bloodGroup, allergies, chronicConditions } = data;
 
+      // Accept both arrays and comma-separated strings; Postgres text[] needs a real array
+      const toArray = (v) => {
+        if (Array.isArray(v)) return v.map((s) => String(s).trim()).filter(Boolean);
+        if (typeof v === 'string' && v.trim()) return v.split(',').map((s) => s.trim()).filter(Boolean);
+        return [];
+      };
+      const allergyArr = toArray(allergies);
+      const conditionArr = toArray(chronicConditions);
+
       const guardian = await Patient.findByUserId(guardianUserId);
       if (!guardian) {
         const err = new Error('Guardian patient profile not found');
@@ -83,8 +92,8 @@ class Family {
             dateOfBirth || null,
             gender || null,
             bloodGroup || null,
-            allergies || [],
-            chronicConditions || []
+            allergyArr,
+            conditionArr
           ]
         );
         const depPatient = patientRes.rows[0];
@@ -113,8 +122,8 @@ class Family {
           [
             depPatient.id,
             bloodGroup || null,
-            Array.isArray(allergies) ? allergies.join(', ') : (allergies || null),
-            Array.isArray(chronicConditions) ? chronicConditions.join(', ') : (chronicConditions || null),
+            allergyArr.length ? allergyArr.join(', ') : null,
+            conditionArr.length ? conditionArr.join(', ') : null,
             `${guardian.first_name || ''} ${guardian.last_name || ''}`.trim() || null,
             guardian.phone || null
           ]
@@ -173,6 +182,12 @@ class Family {
       const { firstName, lastName, relation, dateOfBirth, gender, bloodGroup, allergies, chronicConditions } = data;
       const dependentUserId = linkRes.rows[0].dependent_user_id;
 
+      const toArray = (v) => {
+        if (Array.isArray(v)) return v.map((s) => String(s).trim()).filter(Boolean);
+        if (typeof v === 'string' && v.trim()) return v.split(',').map((s) => s.trim()).filter(Boolean);
+        return null;
+      };
+
       return await transaction(async (client) => {
         if (firstName || lastName) {
           await client.query(
@@ -194,7 +209,7 @@ class Family {
             chronic_conditions = COALESCE($5, chronic_conditions),
             updated_at = NOW()
            WHERE id = $6`,
-          [dateOfBirth || null, gender || null, bloodGroup || null, allergies || null, chronicConditions || null, dependentPatientId]
+          [dateOfBirth || null, gender || null, bloodGroup || null, toArray(allergies), toArray(chronicConditions), dependentPatientId]
         );
 
         if (relation) {
