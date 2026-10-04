@@ -78,6 +78,8 @@ Copy the generated keys into your environment variables for `JWT_ACCESS_SECRET` 
    - `JWT_REFRESH_SECRET`: `<generated-refresh-secret>`
    - `JWT_ACCESS_EXPIRES`: `15m`
    - `JWT_REFRESH_EXPIRES`: `7d`
+   - `COOKIE_SAMESITE`: `none` (Use `none` for cross-site setups where frontend and backend are on different domains like Vercel and Render; use `strict` for a same-site setup)
+   - `TRUST_PROXY`: `1` (Set to `1` when hosted behind a reverse proxy like Render or Heroku)
    - `FRONTEND_URL`: `https://your-frontend-app.vercel.app`
    - `ENABLE_CRON`: `true`
    - `CLOUDINARY_CLOUD_NAME`: `<optional-cloudinary-cloud-name>`

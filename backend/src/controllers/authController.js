@@ -134,7 +134,7 @@ const authController = {
 
   async logout(req, res) {
     await User.clearRefreshToken(req.user.userId);
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', jwtConfig.cookieOptions);
     await auditService.log(req, 'logout', 'user', req.user.userId, 'User logged out');
     return sendSuccess(res, null, 'Logged out successfully');
   },

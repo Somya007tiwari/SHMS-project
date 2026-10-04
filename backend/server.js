@@ -25,19 +25,43 @@ const PORT = process.env.PORT || 5001;
 // ─── Disable X-Powered-By Header ───────────────────────────────────────────
 app.disable('x-powered-by');
 
+// ─── Trust Proxy Configuration ─────────────────────────────────────────────
+let trustProxySetting;
+if (process.env.TRUST_PROXY !== undefined && process.env.TRUST_PROXY !== '') {
+  if (process.env.TRUST_PROXY === 'true') {
+    trustProxySetting = true;
+  } else if (process.env.TRUST_PROXY === 'false') {
+    trustProxySetting = false;
+  } else if (!isNaN(Number(process.env.TRUST_PROXY))) {
+    trustProxySetting = Number(process.env.TRUST_PROXY);
+  } else {
+    trustProxySetting = process.env.TRUST_PROXY;
+  }
+} else {
+  trustProxySetting = process.env.NODE_ENV === 'production' ? 1 : false;
+}
+
+if (trustProxySetting !== false) {
+  app.set('trust proxy', trustProxySetting);
+}
+
 // ─── Security Middleware ────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   crossOriginEmbedderPolicy: false
 }));
 
+const normalizeUrl = (url) => (url ? url.replace(/\/+$/, '') : url);
+const frontendUrlNormalized = normalizeUrl(process.env.FRONTEND_URL);
+
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [process.env.FRONTEND_URL].filter(Boolean)
-  : [process.env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'].filter(Boolean);
+  ? [frontendUrlNormalized].filter(Boolean)
+  : [frontendUrlNormalized, 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin))) {
+    const normalizedOrigin = normalizeUrl(origin);
+    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin) || (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin))) {
       callback(null, true);
     } else {
       callback(new Error('CORS policy violation: Origin not allowed'));

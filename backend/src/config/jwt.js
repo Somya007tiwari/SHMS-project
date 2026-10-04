@@ -1,3 +1,9 @@
+const rawSameSite = process.env.COOKIE_SAMESITE ? process.env.COOKIE_SAMESITE.toLowerCase() : null;
+const allowedSameSite = ['strict', 'lax', 'none'];
+const sameSite = allowedSameSite.includes(rawSameSite)
+  ? rawSameSite
+  : (process.env.NODE_ENV === 'production' ? 'none' : 'lax');
+
 module.exports = {
   access: {
     secret: process.env.JWT_ACCESS_SECRET || 'shms_access_secret_dev',
@@ -10,7 +16,7 @@ module.exports = {
   cookieOptions: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   }
 };
