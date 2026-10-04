@@ -4,11 +4,12 @@ A full-stack, enterprise-grade hospital management web application built for mod
 
 <p>
   <a href="https://shms-project-ecru.vercel.app"><img src="https://img.shields.io/badge/🚀%20Live%20Demo-shms--project--ecru.vercel.app-0ea5e9" alt="Live Demo"></a>
+  <a href="https://github.com/Somya007tiwari/SHMS-project/actions"><img src="https://github.com/Somya007tiwari/SHMS-project/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
   <img src="https://img.shields.io/badge/React-19-61dafb" alt="React 19">
   <img src="https://img.shields.io/badge/Vite-7-646cff" alt="Vite">
   <img src="https://img.shields.io/badge/Node.js-Express-339933" alt="Node.js">
   <img src="https://img.shields.io/badge/PostgreSQL-15+-336791" alt="PostgreSQL">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"></a>
 </p>
 
 ## 🌐 Live Demo
@@ -404,3 +405,16 @@ When generating presentation documentation or screenshots, capture the following
 - **Rate Limiting**: Express rate limiters protect login endpoints from brute-force attempts.
 - **Input Sanitization**: PostgreSQL queries utilize strict parameterization (`$1, $2`) to prevent SQL injection.
 - **Audit Trail**: Sensitive actions (payments, record access, profile edits, acting-as requests) are logged to `audit_logs`.
+
+---
+
+## 👤 Author
+
+Developed with ❤️ by **[Somya Tiwari](https://github.com/Somya007tiwari)**.
+
+---
+
+## 📄 License
+
+This project is open-source and licensed under the [MIT License](LICENSE). Copyright © 2024-2026 Somya Tiwari.
+
