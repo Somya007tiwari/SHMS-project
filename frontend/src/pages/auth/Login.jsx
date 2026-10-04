@@ -27,10 +27,20 @@ const Login = () => {
       };
       navigate(redirectMap[user.role] || '/');
     } catch (err) {
-      if (err.response?.data?.message) {
-        toast.error(err.response.data.message);
+      const status = err.response?.status;
+      if (status === 401) {
+        // Invalid credentials or locked account
+        toast.error(err.response.data?.message || 'Invalid email or password.');
+      } else if (status === 429) {
+        toast.error(err.response.data?.message || 'Too many attempts. Please wait and try again.');
+      } else if (status >= 500) {
+        toast.error('Server error. Please try again later.');
+      } else if (err.code === 'ECONNABORTED') {
+        toast.error('Request timed out. The server is not responding.');
       } else if (err.request || err.code === 'ERR_NETWORK' || !err.response) {
-        toast.error('Cannot reach the server. Please check your backend connection.');
+        toast.error('Cannot reach the server. Please make sure the backend is running (port 5001).');
+      } else if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
       } else {
         toast.error('Login failed. Please try again.');
       }

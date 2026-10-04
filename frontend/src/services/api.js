@@ -1,7 +1,14 @@
 import axios from 'axios';
 
+const isVercelHost =
+  typeof window !== 'undefined' && /\.vercel\.app$/.test(window.location.hostname);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1',
+  // On the deployed Vercel site, call the API same-origin and let vercel.json
+  // proxy /api/* to the Render backend (avoids CORS entirely).
+  baseURL: isVercelHost
+    ? '/api/v1'
+    : import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1',
   timeout: 30000,
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
