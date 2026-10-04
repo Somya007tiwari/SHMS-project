@@ -2,6 +2,32 @@
 
 A full-stack, enterprise-grade hospital management web application built for modern healthcare facilities to streamline patient care, OPD queue management, family dependent profiles, emergency health cards, doctor scheduling, diagnostic lab workflows, billing, medical records, and AI-assisted health triage.
 
+<p>
+  <a href="https://shms-project-ecru.vercel.app"><img src="https://img.shields.io/badge/🚀%20Live%20Demo-shms--project--ecru.vercel.app-0ea5e9" alt="Live Demo"></a>
+  <img src="https://img.shields.io/badge/React-19-61dafb" alt="React 19">
+  <img src="https://img.shields.io/badge/Vite-7-646cff" alt="Vite">
+  <img src="https://img.shields.io/badge/Node.js-Express-339933" alt="Node.js">
+  <img src="https://img.shields.io/badge/PostgreSQL-15+-336791" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
+</p>
+
+## 🌐 Live Demo
+
+The project is deployed and running:
+
+- **Frontend (Vercel):** https://shms-project-ecru.vercel.app
+- **Backend API (Render):** https://shms-backend-8qr5.onrender.com/api/health
+
+Try it with these demo logins:
+
+| Role | Email | Password |
+|---|---|---|
+| 🛡️ Admin | `admin@shms.com` | `Admin@123456` |
+| 🩺 Doctor | `doctor.smith@example.com` | `Doctor@123456` |
+| 👤 Patient | `john.doe@example.com` | `Patient@123456` |
+
+> Note: the Render free instance sleeps after ~15 min of inactivity, so the **first** request after idle may take ~50 seconds.
+
 ---
 
 ## 🌟 Tech Stack
@@ -32,6 +58,33 @@ The application follows a decoupled multi-tier architecture:
 ```
 
 ---
+
+### ☁️ Deployment Architecture
+
+```mermaid
+flowchart TB
+    subgraph Browser["🌐 Client (Browser)"]
+        React["React 19 + Vite SPA<br/>Axios • Auto token refresh"]
+    end
+
+    subgraph Vercel["▲ Vercel (Frontend)"]
+        SPA["Static hosting"]
+        Proxy["/api/* proxy rewrite<br/>(same-origin, no CORS)"]
+    end
+
+    subgraph Render["☁️ Render (Backend)"]
+        API["Express REST API<br/>Helmet • Rate limit • RBAC • JWT<br/>PDF • AI triage • Cron"]
+    end
+
+    subgraph Data["🗄️ Data Tier"]
+        PG[("PostgreSQL (Neon)<br/>32 tables: users, doctors,<br/>patients, appointments,<br/>prescriptions, billing, lab, OPD…")]
+    end
+
+    React --> SPA
+    SPA --> Proxy
+    Proxy --> API
+    API --> PG
+```
 
 ## 🗂️ Folder Structure
 
