@@ -66,9 +66,9 @@ class Family {
         const userRes = await client.query(
           `INSERT INTO users 
             (first_name, last_name, role, is_active, email)
-           VALUES ($1, $2, 'patient', true, NULL)
+           VALUES ($1, $2, 'patient', true, $3)
            RETURNING *`,
-          [firstName.trim(), lastName.trim()]
+          [firstName.trim(), lastName.trim(), `dependent_${require('crypto').randomUUID()}@shms.local`]
         );
         const depUser = userRes.rows[0];
 
