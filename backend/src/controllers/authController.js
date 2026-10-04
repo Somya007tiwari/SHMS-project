@@ -23,7 +23,14 @@ const authController = {
     const existing = await User.findByEmail(email);
     if (existing) return sendError(res, 'Email address already registered', 409);
 
-    const user = await User.create({ email, password, role, firstName, lastName, phone });
+    const user = await User.create({
+      email,
+      password,
+      role,
+      firstName,
+      lastName,
+      phone: phone ? phone.trim() : null
+    });
 
     // Create profile record
     if (role === 'patient') {
