@@ -28,7 +28,20 @@ const Register = () => {
       toast.success('Account created! Please login.');
       navigate('/login');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
+      const validationMsg = err.response?.data?.errors?.[0]?.message;
+      const serverMsg = err.response?.data?.message;
+
+      if (validationMsg) {
+        toast.error(validationMsg);
+      } else if (err.code === 'ECONNABORTED') {
+        toast.error('Request timed out. The server is taking too long to respond.');
+      } else if (err.request || err.code === 'ERR_NETWORK' || !err.response) {
+        toast.error('Cannot reach server. The backend server may be waking up (please wait 15-30s and try again).');
+      } else if (serverMsg) {
+        toast.error(serverMsg);
+      } else {
+        toast.error('Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -113,14 +126,22 @@ const Register = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="input-field pr-12 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                  placeholder="Minimum 8 characters"
-                  {...register('password', { required: 'Required', minLength: { value: 8, message: 'Min 8 characters' } })}
+                  placeholder="Minimum 8 characters (letters & numbers)"
+                  {...register('password', {
+                    required: 'Required',
+                    minLength: { value: 8, message: 'Min 8 characters required' },
+                    validate: {
+                      hasLetter: val => /[A-Za-z]/.test(val) || 'Must contain at least one letter',
+                      hasNumber: val => /\d/.test(val) || 'Must contain at least one number',
+                    }
+                  })}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
               {password && (
                 <div className="mt-2">
                   <div className="flex gap-1 mb-1">
