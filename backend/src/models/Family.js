@@ -65,10 +65,10 @@ class Family {
         // 1. Create User row (no password_hash, no login)
         const userRes = await client.query(
           `INSERT INTO users 
-            (first_name, last_name, role, is_active, email)
-           VALUES ($1, $2, 'patient', true, $3)
+            (first_name, last_name, role, is_active, email, password_hash)
+           VALUES ($1, $2, 'patient', true, $3, $4)
            RETURNING *`,
-          [firstName.trim(), lastName.trim(), `dependent_${require('crypto').randomUUID()}@shms.local`]
+          [firstName.trim(), lastName.trim(), `dependent_${require('crypto').randomUUID()}@shms.local`, `!locked_${require('crypto').randomUUID()}`]
         );
         const depUser = userRes.rows[0];
 
