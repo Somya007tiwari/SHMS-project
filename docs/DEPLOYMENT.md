@@ -10,30 +10,23 @@ This guide provides step-by-step instructions for deploying the Smart Hospital M
    - Create a PostgreSQL database instance on [Neon](https://neon.tech) or [Supabase](https://supabase.com).
    - Obtain the Connection String (`DATABASE_URL`) or host, port, database name, user, and password credentials.
 
-2. **Run Migrations in Sequential Order**:
-   Execute the 15 SQL files from `database/` in exact sequence (as detailed in `database/README.md`):
-   1. `schema.sql`
-   2. `migration_phase2_schedules_and_unique_indexes.sql`
-   3. `migration_phase3_doctor_reviews.sql`
-   4. `migration_phase3_5_doctor_leaves_reschedule.sql`
-   5. `migration_phase3_6_notifications_and_reminders.sql`
-   6. `migration_phase5_medical_records.sql`
-   7. `migration_phase6_prescriptions.sql`
-   8. `migration_phase7_lab_tests_and_reports.sql`
-   9. `migration_phase8_invoices_and_payments.sql`
-   10. `optional_indexes_phase9_analytics.sql`
-   11. `migration_phase11_security_and_audit.sql`
-   12. `migration_phase14_1_prescription_enhancements.sql`
-   13. `migration_phase14_2_emergency_card.sql`
-   14. `migration_phase14_3_opd_queue.sql`
-   15. `migration_phase14_4_family_guardians.sql`
+2. **Automated Migration Runner**:
+   Execute all ordered migrations against your target PostgreSQL database using `npm run migrate -- --yes`.
+
+   **PowerShell Example (Neon Production Database):**
+   ```powershell
+   $env:DATABASE_URL="postgresql://user:password@ep-xyz.neon.tech/neondb?sslmode=require"
+   npm run migrate -- --yes
+   ```
+
+   The migration runner creates the `schema_migrations` table, applies all 17 ordered SQL migration scripts from `database/migration-order.json`, and verifies the schema.
 
 3. **Verify Schema Tables**:
    Run the verification query in pgAdmin / psql:
    ```sql
    SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';
    ```
-   Confirm all 27 tables are created successfully.
+   Confirm all 27 domain tables exist.
 
 4. **Bootstrap Admin Account**:
    Run the admin creation script locally configured with host DB credentials:
@@ -42,7 +35,7 @@ This guide provides step-by-step instructions for deploying the Smart Hospital M
    ```
 
 > [!CAUTION]
-> **PRODUCTION WARNING**: Do NOT run `database/seed.sql` on a public or production database as it creates a demo admin account with a known default password! Always use `node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword"` to bootstrap an admin user safely.
+> **PRODUCTION WARNING**: NEVER run `database/seed.sql` on a public or production database! It creates a demo admin account with a known default password and sample demo data. Always use `node backend/scripts/createAdmin.js admin@yourdomain.com "YourStrongPassword"` to bootstrap an administrator account safely.
 
 ---
 
@@ -68,12 +61,7 @@ Copy the generated keys into your environment variables for `JWT_ACCESS_SECRET` 
 2. **Backend Environment Variables**:
    - `NODE_ENV`: `production`
    - `PORT`: `5001` (or host-assigned port)
-   - `DB_HOST`: `<hosted-db-host>`
-   - `DB_PORT`: `5432`
-   - `DB_NAME`: `<hosted-db-name>`
-   - `DB_USER`: `<hosted-db-user>`
-   - `DB_PASSWORD`: `<hosted-db-password>`
-   - `DB_SSL`: `true`
+   - `DATABASE_URL`: `postgresql://user:password@ep-xyz.neon.tech/neondb?sslmode=require` (or individual `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL=true`)
    - `JWT_ACCESS_SECRET`: `<generated-access-secret>`
    - `JWT_REFRESH_SECRET`: `<generated-refresh-secret>`
    - `JWT_ACCESS_EXPIRES`: `15m`

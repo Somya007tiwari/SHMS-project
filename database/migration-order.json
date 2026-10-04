@@ -1,0 +1,19 @@
+[
+  "schema.sql",
+  "migration_phase1b_doctor_columns.sql",
+  "migration_phase2_schedules_and_unique_indexes.sql",
+  "migration_phase3_doctor_reviews.sql",
+  "migration_phase3_5_doctor_leaves_reschedule.sql",
+  "migration_phase3_5b_needs_reschedule_enum.sql",
+  "migration_phase3_6_notifications_and_reminders.sql",
+  "migration_phase5_medical_records.sql",
+  "migration_phase6_prescriptions.sql",
+  "migration_phase7_lab_tests_and_reports.sql",
+  "migration_phase8_invoices_and_payments.sql",
+  "optional_indexes_phase9_analytics.sql",
+  "migration_phase11_security_and_audit.sql",
+  "migration_phase14_1_prescription_enhancements.sql",
+  "migration_phase14_2_emergency_card.sql",
+  "migration_phase14_3_opd_queue.sql",
+  "migration_phase14_4_family_guardians.sql"
+]

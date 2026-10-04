@@ -18,34 +18,35 @@ async function setupTestDb() {
 
   console.log(`🚀 Starting Test Database setup for target: "${dbName}"...`);
 
-  const client = new Client({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 5432,
-    database: dbName,
-    user: process.env.DB_USER || 'shms_user',
-    password: process.env.DB_PASSWORD || 'shms_password',
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
-  });
+  const clientConfig = process.env.TEST_DATABASE_URL
+    ? {
+        connectionString: process.env.TEST_DATABASE_URL,
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT) || 5432,
+        database: dbName,
+        user: process.env.DB_USER || 'shms_user',
+        password: process.env.DB_PASSWORD || 'shms_password',
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+      };
+
+  const client = new Client(clientConfig);
 
   try {
     await client.connect();
 
     const dbDir = path.join(__dirname, '../../database');
-    const sqlFiles = [
-      'schema.sql',
-      'migration_phase2_schedules_and_unique_indexes.sql',
-      'migration_phase3_doctor_reviews.sql',
-      'migration_phase3_5_doctor_leaves_reschedule.sql',
-      'migration_phase3_6_notifications_and_reminders.sql',
-      'migration_phase5_medical_records.sql',
-      'migration_phase6_prescriptions.sql',
-      'migration_phase7_lab_tests_and_reports.sql',
-      'migration_phase8_invoices_and_payments.sql',
-      'optional_indexes_phase9_analytics.sql',
-      'migration_phase11_security_and_audit.sql'
-    ];
+    const migrationOrderPath = path.join(dbDir, 'migration-order.json');
+    if (!fs.existsSync(migrationOrderPath)) {
+      throw new Error(`migration-order.json not found at ${migrationOrderPath}`);
+    }
+
+    const sqlFiles = JSON.parse(fs.readFileSync(migrationOrderPath, 'utf8'));
 
     for (const file of sqlFiles) {
+      if (file === 'seed.sql') continue; // Extra safety: skip seed.sql
       const filePath = path.join(dbDir, file);
       if (fs.existsSync(filePath)) {
         console.log(`  Applying: ${file}`);

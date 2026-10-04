@@ -264,6 +264,19 @@ Backend integration tests run against an isolated test database (`shms_test`):
 
 ---
 
+## 🚀 Deployment (Vercel + Render)
+
+- **Frontend**: Deployed on Vercel. `frontend/vercel.json` rewrites `/api/*` to the Render backend so all API calls are same-origin (no CORS issues) and falls back to the `VITE_API_URL` env var for direct calls.
+- **Backend**: Deployed on Render (Node/Express). Important env vars: `NODE_ENV=production`, `FRONTEND_URL=<your-vercel-site-url>` (CORS allow-list), `DB_*` Neon/Postgres credentials, `DB_SSL=true`.
+- **Migrations in production**:
+  ```bash
+  $env:DATABASE_URL="<postgres-connection-string>"; $env:DB_SSL="true"
+  node backend/scripts/migrate.js --yes
+  ```
+- A live demo runs at `https://shms-project-ecru.vercel.app/` backed by the Render service `shms-backend`.
+
+---
+
 ## 🎬 Demo Script & 3-Minute Video Flow
 
 > [!CAUTION]
