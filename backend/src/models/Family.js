@@ -98,14 +98,27 @@ class Family {
           [guardian.id, depPatient.id, relation]
         );
 
-        // 4. Create health profile
-        await PatientHealthProfile.upsert(depPatient.id, {
-          bloodGroup: bloodGroup || null,
-          allergies: Array.isArray(allergies) ? allergies.join(', ') : allergies,
-          chronicConditions: Array.isArray(chronicConditions) ? chronicConditions.join(', ') : chronicConditions,
-          emergencyContactName: `${guardian.first_name} ${guardian.last_name}`,
-          emergencyContactPhone: guardian.phone || ''
-        });
+        // 4. Create health profile (inside the same transaction)
+        await client.query(
+          `INSERT INTO patient_health_profiles
+            (patient_id, blood_group, allergies, chronic_conditions, emergency_contact_name, emergency_contact_phone, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, NOW())
+           ON CONFLICT (patient_id) DO UPDATE SET
+             blood_group = EXCLUDED.blood_group,
+             allergies = EXCLUDED.allergies,
+             chronic_conditions = EXCLUDED.chronic_conditions,
+             emergency_contact_name = EXCLUDED.emergency_contact_name,
+             emergency_contact_phone = EXCLUDED.emergency_contact_phone,
+             updated_at = NOW()`,
+          [
+            depPatient.id,
+            bloodGroup || null,
+            Array.isArray(allergies) ? allergies.join(', ') : (allergies || null),
+            Array.isArray(chronicConditions) ? chronicConditions.join(', ') : (chronicConditions || null),
+            `${guardian.first_name || ''} ${guardian.last_name || ''}`.trim() || null,
+            guardian.phone || null
+          ]
+        );
 
         return {
           id: depPatient.id,
