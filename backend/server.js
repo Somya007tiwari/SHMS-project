@@ -54,6 +54,18 @@ app.use(helmet({
 const normalizeUrl = (url) => (url ? url.replace(/\/+$/, '') : url);
 const frontendUrlNormalized = normalizeUrl(process.env.FRONTEND_URL);
 
+// Allow Vercel deployments (including custom domains) + local dev
+const isVercelOrigin = (origin) => {
+  if (!origin) return false;
+  const normalized = normalizeUrl(origin);
+  return (
+    /\.vercel\.app$/.test(normalized) ||           // *.vercel.app
+    /^https:\/\/.*\.vercel\.app$/.test(normalized) || // preview deployments
+    normalized === frontendUrlNormalized ||        // exact FRONTEND_URL match
+    (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalized))
+  );
+};
+
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [frontendUrlNormalized].filter(Boolean)
   : [frontendUrlNormalized, 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'].filter(Boolean);
@@ -61,15 +73,16 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 app.use(cors({
   origin: (origin, callback) => {
     const normalizedOrigin = normalizeUrl(origin);
-    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin) || (process.env.NODE_ENV !== 'production' && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin))) {
+    if (!normalizedOrigin || allowedOrigins.includes(normalizedOrigin) || isVercelOrigin(normalizedOrigin)) {
       callback(null, true);
     } else {
+      console.warn('[CORS] Blocked origin:', normalizedOrigin);
       callback(new Error('CORS policy violation: Origin not allowed'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Acting-Patient-Id']
 }));
 
 // ─── General Middleware ─────────────────────────────────────────────────────

@@ -1,12 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/api/v1/(.*)",
+      "destination": "https://shms-backend-8qr5.onrender.com/api/v1/$1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "https://shms-backend-8qr5.onrender.com/api/$1"
     },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
     }
   ]
 }

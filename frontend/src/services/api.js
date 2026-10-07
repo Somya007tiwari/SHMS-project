@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-const isVercelHost =
-  typeof window !== 'undefined' && /\.vercel\.app$/.test(window.location.hostname);
+// Detect if running on Vercel (including custom domains)
+// Check: 1) .vercel.app hostname, 2) VITE_API_URL is set (production indicator), 3) window.__VERCEL__ flag
+const isVercelHost = typeof window !== 'undefined' && (
+  /\.vercel\.app$/.test(window.location.hostname) ||
+  import.meta.env.VITE_API_URL?.includes('onrender.com') ||
+  window.__VERCEL__ === true
+);
 
 const api = axios.create({
-  // On the deployed Vercel site, call the API same-origin and let vercel.json
-  // proxy /api/* to the Render backend (avoids CORS entirely).
+  // On Vercel (any domain), use same-origin /api/v1 and let vercel.json proxy to Render
   baseURL: isVercelHost
     ? '/api/v1'
     : import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1',
@@ -13,6 +17,14 @@ const api = axios.create({
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });
+
+// Debug logging (remove in production)
+if (import.meta.env.DEV) {
+  console.log('[API] BaseURL:', api.defaults.baseURL);
+  console.log('[API] isVercelHost:', isVercelHost);
+  console.log('[API] VITE_API_URL:', import.meta.env.VITE_API_URL);
+  console.log('[API] Hostname:', window.location.hostname);
+}
 
 // Request interceptor - attach access token and handle FormData Content-Type
 api.interceptors.request.use((config) => {
